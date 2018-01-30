@@ -1,0 +1,4 @@
+interface Calendar {
+    name: string,
+    
+}
