@@ -7,4 +7,9 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'app';
+  viewDate = Date.now();
+  view = 'month';
+  handleDay(day) {
+    this.viewDate = day.date;
+  }
 }

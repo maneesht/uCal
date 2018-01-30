@@ -1,4 +1,4 @@
-# uCal
+# uCal[![Build Status](https://travis-ci.com/maneesht/uCal.svg?token=HusTaf8T8UP2cptpeArK&branch=master)](https://travis-ci.com/maneesht/uCal)
 
 ### Running the server
 **Note: This serves from ../uCalAngular/dist so you must first build the front-end to be able to serve the web-app**
