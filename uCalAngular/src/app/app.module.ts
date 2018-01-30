@@ -14,7 +14,13 @@ import { CalendarComponent } from './calendar/calendar.component';
 import { LoginComponent } from './login/login.component';
 import { GroupComponent } from './group/group.component';
 import { EventsComponent } from './events/events.component';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { TokenHandlerService } from './token-handler/token-handler.service';
+import { LoginSuccessComponent } from './login-success/login-success.component';
+import { AuthGuardService } from './auth/auth-guard.service';
+import { AuthService } from './auth/auth.service';
+import { JwtModule } from '@auth0/angular-jwt';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -23,18 +29,30 @@ import { FormsModule } from '@angular/forms';
     CalendarComponent,
     LoginComponent,
     GroupComponent,
-    EventsComponent
+    EventsComponent,
+    LoginSuccessComponent
   ],
   imports: [
     BrowserModule,
     FormsModule,
+    ReactiveFormsModule,
     ServiceWorkerModule.register('/ngsw-worker.js', { enabled: environment.production }),
     BrowserAnimationsModule,
     CalendarModule.forRoot(),
     NgbModule.forRoot(),
+    HttpClientModule,
+    JwtModule.forRoot({
+      config: {
+        tokenGetter: () =>{
+          return localStorage.getItem('token')
+        },
+        headerName: 'x-access-token',
+        whitelistedDomains: ['localhost:3000', 'localhost:4200']
+      }
+    }),
     AppRoutingModule
   ],
-  providers: [],
+  providers: [TokenHandlerService, AuthGuardService, AuthService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -6,8 +6,8 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./group.component.css']
 })
 export class GroupComponent implements OnInit {
+  constructor(){}
 
-  constructor() { }
 
   ngOnInit() {
   }

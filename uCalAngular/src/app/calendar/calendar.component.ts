@@ -11,6 +11,7 @@ import {
 } from 'date-fns';
 import { CalendarEvent, CalendarEventTitleFormatter } from 'angular-calendar';
 import { CustomEventTitleFormatter } from './custom-event-title-formatter.provider';
+import { HttpClient } from '@angular/common/http';
 @Component({
   selector: 'app-calendar',
   templateUrl: './calendar.component.html',
@@ -23,6 +24,7 @@ import { CustomEventTitleFormatter } from './custom-event-title-formatter.provid
   ]
 })
 export class CalendarComponent implements OnInit {
+  activeDayIsOpen: boolean = false;
   events: CalendarEvent[] = [ 
     {
       start: new Date(2018, 1, 14, 13, 30),
@@ -30,11 +32,10 @@ export class CalendarComponent implements OnInit {
       title: 'Lunch with Manu',
       color: {primary: "blue", secondary: "lightblue"}
     }];
-  constructor() { }
-
+  constructor(public http: HttpClient) { }
   ngOnInit() {
+    this.http.get('/api/get-events').subscribe(resp => console.log(resp));
   }
-  activeDayIsOpen: boolean = true;
   viewDate: Date = new Date();
   dayClicked({ date, events }: { date: Date; events: CalendarEvent[] }): void {
     console.log("yay");
