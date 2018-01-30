@@ -1,155 +1,154 @@
-let User = require('../models/user').User;
-let Calendar = require('../models/calendar');
-let Group = require('../models/group').Group;
-let UEvent = require('../models/event');
+var User = require('../models/user').User;
+var Calendar = require('../models/calendar').Calendar;
+var Group = require('../models/group').Group;
+var Evento = require('../models/event').Evento;
 let express = require('express');
-const { verifyToken } = require('../token-handler');
 const _ = require('lodash');
+const q = require('q');
+let groupRouter = express.Router();
 
-let groupRoutes = express.Router();
-groupRoutes.use(verifyToken); //makes sure tokens are valid
-groupRoutes.post('/accept', (req, res) => {
-    //Accept an Invitation to a Group
-    let user = _.pick(req.body, [user]);
-    let group = _.pick(req.body, [groupId]);
-    User.findByCredentials(user).then((user) => {
-        Group.findOne({
-            _id: group._id,
-            invited: {$elemMatch: user._id}
-        }).then((group) => {
-            group.invited.remove(user._id);
-            group.members.push(user._id);
-            group.save().then(() => {
-                console.log("Successfully joined group");
-                user.groupInvites.remove(group._id);
-                user.groups.push(group._id);
-                user.save().then(() => {
-                    return res.status(200).send("Successfully updated user and group");
-                }).catch(() => {
-                    return res.status(418).send("Failed to update the user");
-                });
-            }).catch(() => {
-                return res.status(400).send("Failed to update the user and group");
-            });
-        }).catch((err) => {
-            return res.status(404).send("Group not Found");
-        });
-    }).catch((err) => {
-        return res.status(401).send("Invalid Login");
-    });
-});
-
-groupRoutes.post('/create', (res, req) => {
-    //Create a new Group (N.B. You cannot invite people here)
-    let user = _.pick(res.body, [user]);
-    let group = _.pick(res.body, [group]);
-    User.findByCredentials(user).then((user) => {
-        group = new Group(group);
-        group.save().then(() => {
-            return res.status(200).send("Group Created");
+groupRouter.patch('/user/:userId/groups/:groupID/accept', (req, res) => {
+    //accept or decline a group invite
+    var accept = _.pick(req.body, ['accept']).accept;
+    if (accept) {
+        Group.findOneAndUpdate({
+            _id: req.params.groupID,
+            $elemMatch: {invited: user._id}
+        }, {
+            $push: {members: user._id},
+            $pull: {invited: user._id}
+        }).then(() => {
+            return res.status(200).send("User added to group");
         }).catch(() => {
-            return res.status(400).send("Failed to create group");
+            return res.status(400).send("Failed to add user to group");
         });
-    }).catch(() => {
-        return res.status(401).send("Invalid Login");
-    });
-});
-
-groupRoutes.post('/decline', (res, req) => {
-    //Decline Invitation to Group
-    let user = _.pick(res.body, [user]);
-    let group = _.pick(res.body, [group]);
-    User.findByCredentials(user).then((user) => {
-        Group.findOne({
-            _id: group._id,
-            invited: {$elemMatch: user._id}
-        }).then((group) => {
-            group.invited.remove(user._id);
-            group.save().then(() => {
-                user.groupInvites.remove(group._id);
-                user.save().then(() => {
-                    return res.status(200).send("Invite Successfully Declined");
-                }).catch(() => {
-                    return res.status(400).send("Failed to update user");
-                });
-            }).catch(() => {
-                return res.status(400).send("Failed to update user and group");
-            });
+    } else {
+        Group.findOneAndUpdate({
+            _id: req.params.groupID,
+            $elemMatch: {invited: user._id}
+        }, {
+            $pull: {invited: user._id}
+        }).then(() => {
+            return res.status(200).send("User declined invitation to group");
         }).catch(() => {
-            return res.status(404).send("Group not found");
+            return res.status(400).send("Failed to decline invitation to group");
         });
-    }).catch(() => {
-        return res.status(401).send("Invalid login");
-    });
+    };
 });
 
-function deleteGroup(owner, groupId) {
+groupRouter.patch('/groups/:groupID/invite', (req, res) => {
+    //Invite users to the group
+    var invites = _.pick(req.body, ['users']).users;
 
-}
-
-groupRoutes.post('/leave', (res, req) => {
-    //Leave a Group
-    let user = _.pick(res.body, [user]);
-    let group = _.pick(res.body, [group]);
-    User.findByCredentials(user).then((user) => {
-        Group.findOne({
-            _id: group.id,
-            members: {$elemMatch: user._id}
-        }).then((group) => {
-            group.members.remove(user._id);
-            group.save().then(() => {
-                user.groups.remove(group._id);
-                user.save().then(() => {
-                    return res.status(200).send("Successfully left group");
-                }).catch(() => {
-                    return res.status(400).send("Failed to update user");
-                });
-            }).catch(() => {
-                return res.status(400).send("Failed to update group and user");
-            });
-        }).catch(() => {
-            return res.status(404).send("Group not found");
-        });
+    Group.findById(req.params.groupID, {$addToSet: {invited: {$each: invites}}}, {new: true}).then((group) => {
+        for (var x = 0; x < group.invited.length; x++) {
+            User.findByIdAndUpdate(group.invited[x], {$addToSet: {groupinvites: group._id}});
+        };
     }).catch(() => {
-        return res.status(401).send("Invalid Login");
-    });
+        return res.status(400).send("Failed to invite users to group");
+    })
 });
 
-groupRoutes.post('/invite', (res, req) => {
+
+groupRouter.post('/user/:userID/groups', (req, res) => {
+    //Create a new Group 
+    var groupinfo = _.pick(req.body, ['group']).group;
+    var group = new Group({
+        name: groupinfo.name,
+        creator: req.params.userID,
+        invited: ((invited in groupinfo) ? groupinfo.invited : []),
+        members: [req.params.userID]
+    });
     
-});
-function inviteToGroup(user, groupId, invited) {
-    let user = User.findByCredentials(user);
-    let group = Group.findOne({_id: groupId, members: {$elemMatch: user._id}});
-    group.members.push(invited);
-    return group;
-}
-
-groupRoutes.post('/groups/remove', (res, req) => {
-    let owner = _.pick(res.body, [user]);
-    let group = _.pick(res.body, [group]);
-    let user = _.pick(res.body, [toRemove]);
-    User.findByCredentials(owner).then((owner) => {
-        Group.findOne({
-            _id: group._id,
-            owner: owner._id,
-            members: {$elemMatch: user._id}
-        }).then((group) => {
-            group.members.remove(user._id);
-            group.save().then(() => {
-                User.findOneAndUpdate({_id: user._id}, {$pull: {groups: group._id}}).then(() => {
-                    return res.status(200).send("User successfully Removed from group");
-                }).catch(() => {
-                    return res.status(400).send("Failed to update user");
-                });
-            }).catch(() => {
-                return res.status(400).send("Failed to update group and user");
-            });
-        }).catch(() => {
-            return res.status(404).send("Group not found");
-        });
+    group.save().then((group) => {
+        for (var x = 0; x < group.invited.length; x ++) {
+            User.findByIdAndUpdate(group.invited[x], {$push: {groupinvites: group._id}});
+        };
+        return res.status(200).send(group);
     }).catch(() => {
-        return res.status(401).send("Invalid Login");
+        return res.status(400).send("Failed to create group");
     });
 });
-module.exports = { groupRoutes };
+
+groupRouter.delete('/users/:userID/groups/:groupID', (req, res) => {
+    Group.findOne({
+        _id: req.params.groupID,
+        $elemMatch: {members: req.params.userID}
+    }).then((group) => {
+        if (group.owner.equals(req.params.userID)) {
+            return res.status(400).send("Owner of group cannot leave/be removed");
+        } else {
+            Group.findByIdAndUpdate(group._id, {$pull: {members: req.params.userID}}).then((group) => {
+                User.findByIdAndUpdate(req.params.userID, {$pull: {groups: group._id}}).then((user) => {
+                    return res.status(200).send("User removed from group");
+                });
+            }).catch(() => {
+                return res.status(400).send("Failed to remove user from group");
+            });
+        };
+    }).catch(() => {
+        return res.status(404).send("Group not Found");
+    });
+});
+
+groupRouter.delete('/groups/:groupId', (req, res) => {
+
+});
+
+groupRouter.get('/groups/:groupId', (req, res) => {
+    Group.findById(req.params.groupID).then((group) => {
+        var data = {
+            name: group.name,
+            creator: {},
+            invited: [],
+            members: [],
+            calendars: []
+        };
+        var promises = []
+        for (var x = 0; x < group.invited; x++) {
+            promises.push(User.findById(group.invited[x]).then((invitedUser) => {
+                data.invited.push({
+                    email: invitedUser.email,
+                    _id: invitedUser._id
+                });
+            }).catch((err) => {
+                console.error(err)
+            }));
+        };
+        for (var x = 0; x < group.members; x++) {
+            promises.push(User.findById(group.members[x]).then((member) => {
+                data.members.push({
+                    email: member.email,
+                    _id: memeber._id
+                });
+            }).catch((err) => {
+                console.error(err);
+            }));
+        };
+        for (var x = 0; x < group.calendars; x++) {
+            promises.push(Calendar.findById(group.calendars[x]).then((calendar) => {
+                data.calendars.push({
+                    name: calendar.name,
+                    description: calendar.description,
+                    owner: calendar.owner,
+                    events: []
+                });
+                for (var y = 0; y < calendar.events.length; y++) {
+                    Evento.findById(calendar.events[y]).then((event) => {
+                        data.calendars.events.push(event);
+                    }).catch((err) => {
+                        console.error(err);
+                    });
+                };
+            }).catch((err) => {
+                console.log(err);
+            }));
+        };
+        q.all(promises).then(() => {
+            return res.status(200).send(data);
+        })
+    }).catch(() => {
+        return res.status(400).send("Group not Found");
+    })
+});
+module.exports = groupRouter;
