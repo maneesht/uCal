@@ -8,6 +8,18 @@
   <div class="col-3">
     <button class="btn btn-primary float-right" mwlCalendarNextView [view]="view" [(viewDate)]="viewDate">Next</button>
   </div>
+  <div class = "mx-auto">
+    <button class="btn btn-primary" (click)="setView('month')">Month</button>
+    <button class="btn btn-primary" (click)="setView('week')">Week</button>
+    <button class="btn btn-primary" (click)="setView('day')">Day</button>
+  </div>
 </div>
-<mwl-calendar-month-view [viewDate]="viewDate" (dayClicked)="handleDay($event.day)">
-</mwl-calendar-month-view>
+<div [ngSwitch]="view">
+  <mwl-calendar-month-view *ngSwitchCase="'month'" [viewDate]="viewDate" (dayClicked)="handleDay($event.day)">
+  </mwl-calendar-month-view>
+  <mwl-calendar-day-view *ngSwitchCase="'day'" [viewDate]="viewDate" (dayClicked)="handleDay($event.day)">
+  </mwl-calendar-day-view>
+  <mwl-calendar-week-view *ngSwitchCase="'week'" [viewDate]="viewDate" (dayClicked)="handleDay($event.day)">
+  </mwl-calendar-week-view>
+</div>
+

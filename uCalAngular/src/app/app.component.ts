@@ -12,4 +12,7 @@ export class AppComponent {
   handleDay(day) {
     this.viewDate = day.date;
   }
+  setView(view){
+    this.view = view;
+  }
 }
