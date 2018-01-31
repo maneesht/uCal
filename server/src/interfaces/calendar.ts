@@ -1,4 +1,0 @@
-interface Calendar {
-    name: string,
-    
-}

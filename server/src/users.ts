@@ -1,5 +1,0 @@
-/**
- * Endpoints for users.
- */
-
- 

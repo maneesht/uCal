@@ -7,9 +7,16 @@
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "engines": {
+    "node": "8.1.4"
+  },
   "author": "Maneesh Tewani <maneesh.tewani@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.16.2"
+    "express": "^4.16.2",
+    "cors": "^2.8.4",
+    "body-parser": "^1.18.2",
+    "mongodb": "^2.2.33",
+    "mongoose": "^4.13.4"
   }
 }
