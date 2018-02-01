@@ -1,22 +1,21 @@
+dist: trusty
+sudo: false
+
 language: node_js
-apt:
-  sources:
-    — google-chrome
-  packages:
-    — google-chrome-stable
 node_js:
   - 8.9.4
+
+cache:
+  directories:
+    - ./uCalAngular/node_modules
 install:
   - cd ./uCalAngular
   - npm install
   - cd ../server
   - npm install
   - cd ..
-cache:
-  directories:
-    - ./uCalAngular/node_modules
-    - ./server/node_modules
 script:
+  # Use Chromium instead of Chrome.
   - cd ./uCalAngular
   - export CHROME_BIN=chromium-browser
   - xvfb-run -a npm run test -- --single-run --no-progress --browser=ChromeNoSandbox
