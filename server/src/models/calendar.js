@@ -5,7 +5,10 @@ var CalendarSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-	//TODO add properties
+  description: String,
+  events: [mongoose.Schema.Types.ObjectId],
+  owner: mongoose.Schema.Types.ObjectId,
+  users: [mongoose.Schema.Types.ObjectId]
 });
 
 //TODO add functions

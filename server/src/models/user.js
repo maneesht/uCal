@@ -13,9 +13,15 @@ var UserSchema = new mongoose.Schema({
   },
 	email: {
 		type: String,
-		required: true
-	}
-	//TODO add other properties
+    required: true,
+    unique: true
+  },
+  calendars: [{
+    calendarId: mongoose.Schema.Types.ObjectId,
+    edit: Boolean
+  }],
+  groups: [mongoose.Schema.Types.ObjectId],
+  friends: [mongoose.Schema.Types.ObjectId]
 });
 
 //TODO add functions for the users, like find by credentials

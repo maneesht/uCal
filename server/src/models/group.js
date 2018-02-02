@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 
 var GroupSchema = new mongoose.Schema({
@@ -5,7 +6,10 @@ var GroupSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-	//TODO add properties
+  creator: mongoose.Schema.Types.ObjectId,
+  invited: [mongoose.Schema.Types.ObjectId],
+  members: [mongoose.Schema.Types.ObjectId],
+  calendars: [mongoose.Schema.Types.ObjectId]
 });
 
 //TODO add functions
