@@ -3,17 +3,21 @@ import { AppComponent } from './app.component';
 import { CalendarModule } from 'angular-calendar';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { By } from '@angular/platform-browser';
+import { NavBarComponent } from './nav-bar/nav-bar.component';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 describe('AppComponent', () => {
   let fixture: ComponentFixture<AppComponent>;
   let comp: AppComponent;
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [
-        AppComponent
+        AppComponent,
+        NavBarComponent
       ],
       imports: [
         CalendarModule.forRoot(),
         BrowserAnimationsModule,
+        NgbModule.forRoot()
       ]
     }).compileComponents();
   }));
