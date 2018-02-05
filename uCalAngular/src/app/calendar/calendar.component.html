@@ -1,0 +1,32 @@
+<div class="row">
+  <div class="col-3">
+    <button class="btn btn-primary" mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate">Previous</button>
+  </div>
+  <div class="col-6">
+    <h2 class="text-center">{{ viewDate | calendarDate:(view+ 'ViewTitle'):'en' }}</h2>
+  </div>
+  <div class="col-3">
+    <button class="btn btn-primary float-right" mwlCalendarNextView [view]="view" [(viewDate)]="viewDate">Next</button>
+  </div>
+</div>
+<div class="text-center">
+  <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="view">
+    <label ngbButtonLabel class="btn-primary">
+      <input ngbButton type="radio" value="month"> Month
+    </label>
+    <label ngbButtonLabel class="btn-primary">
+      <input ngbButton type="radio" value="week"> Week
+    </label>
+    <label ngbButtonLabel class="btn-primary">
+      <input ngbButton type="radio" value="day"> Day
+    </label>
+  </div>
+</div>
+<div [ngSwitch]="view">
+  <mwl-calendar-month-view *ngSwitchCase="'month'" [viewDate]="viewDate" (dayClicked)="handleDay($event.day)">
+  </mwl-calendar-month-view>
+  <mwl-calendar-day-view *ngSwitchCase="'day'" [viewDate]="viewDate" (dayClicked)="handleDay($event.day)">
+  </mwl-calendar-day-view>
+  <mwl-calendar-week-view *ngSwitchCase="'week'" [viewDate]="viewDate" (dayClicked)="handleDay($event.day)">
+  </mwl-calendar-week-view>
+</div>

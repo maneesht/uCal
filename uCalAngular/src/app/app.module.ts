@@ -6,21 +6,33 @@ import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { AppComponent } from './app.component';
+import {AppRoutingModule} from './app-routing/app-routing.module';
 
 import { environment } from '../environments/environment';
 import { NavBarComponent } from './nav-bar/nav-bar.component';
+import { CalendarComponent } from './calendar/calendar.component';
+import { LoginComponent } from './login/login.component';
+import { GroupComponent } from './group/group.component';
+import { EventsComponent } from './events/events.component';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
     AppComponent,
-    NavBarComponent
+    NavBarComponent,
+    CalendarComponent,
+    LoginComponent,
+    GroupComponent,
+    EventsComponent
   ],
   imports: [
     BrowserModule,
+    FormsModule,
     ServiceWorkerModule.register('/ngsw-worker.js', { enabled: environment.production }),
     BrowserAnimationsModule,
     CalendarModule.forRoot(),
-    NgbModule.forRoot()
+    NgbModule.forRoot(),
+    AppRoutingModule
   ],
   providers: [],
   bootstrap: [AppComponent]
