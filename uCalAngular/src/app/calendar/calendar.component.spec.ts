@@ -1,10 +1,12 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CalendarComponent } from './calendar.component';
 import { By } from '@angular/platform-browser';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { CalendarModule } from 'angular-calendar';
 import { FormsModule } from '@angular/forms';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('CalendarComponent', () => {
   let comp: CalendarComponent;
@@ -12,7 +14,7 @@ describe('CalendarComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ CalendarComponent ],
-      imports: [NgbModule, CalendarModule.forRoot(), FormsModule]
+      imports: [NgbModule, CalendarModule.forRoot(), FormsModule, BrowserAnimationsModule]
     })
     .compileComponents();
   }));
