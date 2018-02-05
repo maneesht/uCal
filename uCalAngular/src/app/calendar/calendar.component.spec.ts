@@ -56,7 +56,7 @@ describe('CalendarComponent', () => {
     fixture.detectChanges();
     const compiled = fixture.debugElement.nativeElement;
     // query selects month button by looking for input with the value of month
-    const monthButton = fixture.debugElement.queryAll(By.css('input[value="month"]'))[0];
+    const monthButton = fixture.debugElement.query(By.css('input[value="month"]'));
     monthButton.nativeElement.click();
     fixture.detectChanges();
     expect(comp.view).toEqual('month');
