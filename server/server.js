@@ -6,6 +6,8 @@ let express = require('express');
 let bodyParser = require('body-parser');
 let cors = require('cors');
 
+var exports = module.exports = {};
+
 //include objects
 const { mongoose, mongoUrl } = require('./src/database/mongoose');
 const { ObjectID } = require('mongodb');
