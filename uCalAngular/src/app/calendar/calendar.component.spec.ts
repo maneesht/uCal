@@ -1,5 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CalendarComponent } from './calendar.component';
 import { By } from '@angular/platform-browser';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
@@ -12,7 +13,7 @@ describe('CalendarComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ CalendarComponent ],
-      imports: [NgbModule, CalendarModule.forRoot(), FormsModule]
+      imports: [NgbModule, CalendarModule.forRoot(), FormsModule, BrowserAnimationsModule]
     })
     .compileComponents();
   }));
@@ -56,7 +57,7 @@ describe('CalendarComponent', () => {
     fixture.detectChanges();
     const compiled = fixture.debugElement.nativeElement;
     // query selects month button by looking for input with the value of month
-    const monthButton = fixture.debugElement.queryAll(By.css('input[value="month"]'))[0];
+    const monthButton = fixture.debugElement.query(By.css('input[value="month"]'));
     monthButton.nativeElement.click();
     fixture.detectChanges();
     expect(comp.view).toEqual('month');
