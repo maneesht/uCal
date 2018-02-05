@@ -8,10 +8,18 @@
   <div class="col-3">
     <button class="btn btn-primary float-right" mwlCalendarNextView [view]="view" [(viewDate)]="viewDate">Next</button>
   </div>
-  <div class = "mx-auto">
-    <button class="btn btn-primary" (click)="setView('month')">Month</button>
-    <button class="btn btn-primary" (click)="setView('week')">Week</button>
-    <button class="btn btn-primary" (click)="setView('day')">Day</button>
+</div>
+<div class="text-center">
+  <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="view">
+    <label ngbButtonLabel class="btn-primary">
+      <input ngbButton type="radio" value="month"> Month
+    </label>
+    <label ngbButtonLabel class="btn-primary">
+      <input ngbButton type="radio" value="week"> Week
+    </label>
+    <label ngbButtonLabel class="btn-primary">
+      <input ngbButton type="radio" value="day"> Day
+    </label>
   </div>
 </div>
 <div [ngSwitch]="view">
