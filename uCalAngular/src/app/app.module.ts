@@ -13,7 +13,6 @@ import { NavBarComponent } from './nav-bar/nav-bar.component';
 import { CalendarComponent } from './calendar/calendar.component';
 import { LoginComponent } from './login/login.component';
 import { GroupComponent } from './group/group.component';
-import { EventsComponent } from './events/events.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { TokenHandlerService } from './token-handler/token-handler.service';
 import { LoginSuccessComponent } from './login-success/login-success.component';
@@ -22,6 +21,9 @@ import { AuthService } from './auth/auth.service';
 import { JwtModule } from '@auth0/angular-jwt';
 import { HttpClientModule } from '@angular/common/http';
 
+import { SettingsComponent } from './settings/settings.component';
+
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -29,8 +31,8 @@ import { HttpClientModule } from '@angular/common/http';
     CalendarComponent,
     LoginComponent,
     GroupComponent,
-    EventsComponent,
-    LoginSuccessComponent
+    LoginSuccessComponent,
+    SettingsComponent
   ],
   imports: [
     BrowserModule,
