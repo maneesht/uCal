@@ -1,4 +1,4 @@
-var User = require('../models/user');
+var User = require('../models/user').User;
 var Calendar = require('../models/calendar');
 var Group = require('../models/group');
 var Event = require('../models/event');
@@ -40,7 +40,7 @@ function createUser(userData) {
 }
 
 function updateUser(userData) {
-    User.findOneAndUpdate({_id: userData._id}, userData, userUpdated());
+    User.User.findOneAndUpdate({_id: userData._id}, userData, userUpdated());
 }
 
 function getUser(userData) {
