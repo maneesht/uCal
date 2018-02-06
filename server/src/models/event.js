@@ -6,25 +6,22 @@ var EventSchema = new mongoose.Schema({
     required: true
   },
   date: {
-    day: {
-      type: Number,
-      required: true
-    },
-    month: {
-      type: Number,
-      required: true
-    },
-    year: {
-      type: Number,
-      required: true
-    }
+    day: Number,
+    month: Number,
+    year: Number
   },
   allDay: Boolean,
   startTime: {
+    day: Number,
+    month: Number,
+    year: Number,
     hour: Number,
     minute: Number
   },
   endTime: {
+    day: Number,
+    month: Number,
+    year: Number,
     hour: Number,
     minute: Number
   },

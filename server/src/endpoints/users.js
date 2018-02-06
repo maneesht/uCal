@@ -21,6 +21,17 @@ function userUpdated(err) {
 
 function createUser(userData) {
     //TODO parse data passed here to make sure it is valid.
+    
+    //How to make this work
+    User.User.findOne({email: userData.email}, function (err, res) {
+        if (err || !res)
+            continue;
+        else {
+            console.log("username already exists");
+            
+        }
+    });
+
     var user = new User(
         //TODO put USER info here
     );
