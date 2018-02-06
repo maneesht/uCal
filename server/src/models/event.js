@@ -5,7 +5,41 @@ var EventSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-	//TODO add properties
+  date: {
+    day: Number,
+    month: Number,
+    year: Number
+  },
+  allDay: Boolean,
+  startTime: {
+    day: Number,
+    month: Number,
+    year: Number,
+    hour: Number,
+    minute: Number
+  },
+  endTime: {
+    day: Number,
+    month: Number,
+    year: Number,
+    hour: Number,
+    minute: Number
+  },
+  location: {
+    name: String,
+    longitude: Number,
+    latitude: Number
+  },
+  description: String,
+  owner: mongoose.Schema.Types.ObjectId,
+  calendar: mongoose.Schema.Types.ObjectId,
+  invites: [mongoose.Schema.Types.ObjectId],
+  rsvp: {
+    required: false,
+    accepted: [mongoose.Schema.Types.ObjectId],
+    declined: [mongoose.Schema.Types.ObjectId],
+    noResponse: [mongoose.Schema.Types.ObjectId]
+  }
 });
 
 //TODO add functions
