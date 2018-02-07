@@ -6,7 +6,7 @@ const _ = require('lodash');
 const app = require('../../server');
 
 app.post('/groups/accept', (req, res) => {
-    //acceptInviteToGroup
+    //Accept an Invitation to a Group
     var user = _.pick(req.body, [user]);
     var group = _.pick(req.body, [groupId]);
     User.User.findByCredentials(user).then((user) => {
@@ -37,7 +37,7 @@ app.post('/groups/accept', (req, res) => {
 });
 
 app.post('/groups/create', (res, req) => {
-    //Cannot Invite people here
+    //Create a new Group (N.B. You cannot invite people here)
     var user = _.pick(res.body, [user]);
     var group = _.pick(res.body, [group]);
     User.User.findByCredentials(user).then((user) => {
@@ -50,32 +50,71 @@ app.post('/groups/create', (res, req) => {
     }).catch(() => {
         return res.status(401).send("Invalid Login");
     });
-})
+});
 
-function declineInviteToGroup(user, groupId) {
-    var user = User.User.findByCredentials(user);
-    var group = Group.Group.findOne({
-        _id: groupId,
-        invited: {$elemMatch: user._id}
+app.post('/groups/decline', (res, req) => {
+    //Decline Invitation to Group
+    var user = _.pick(res.body, [user]);
+    var group = _.pick(res.body, [group]);
+    User.User.findByCredentials(user).then((user) => {
+        Group.Group.findOne({
+            _id: group._id,
+            invited: {$elemMatch: user._id}
+        }).then((group) => {
+            group.invited.remove(user._id);
+            group.save().then(() => {
+                user.groupInvites.remove(group._id);
+                user.save().then(() => {
+                    return res.status(200).send("Invite Successfully Declined");
+                }).catch(() => {
+                    return res.status(400).send("Failed to update user");
+                });
+            }).catch(() => {
+                return res.status(400).send("Failed to update user and group");
+            });
+        }).catch(() => {
+            return res.status(404).send("Group not found");
+        });
+    }).catch(() => {
+        return res.status(401).send("Invalid login");
     });
-    group.invited.remove(user._id);
-    return group;
-}
+});
 
 function deleteGroup(owner, groupId) {
 
 }
 
-function leaveGroup(user, groupId) {
-    var user = User.User.findByCredentials(user);
-    var group = Group.Group.findOne({
-        _id: groupId,
-        members: {$elemMatch: user._id}
+app.post('/groups/leave', (res, req) => {
+    //Leave a Group
+    var user = _.pick(res.body, [user]);
+    var group = _.pick(res.body, [group]);
+    User.User.findByCredentials(user).then((user) => {
+        Group.Group.findOne({
+            _id: group.id,
+            members: {$elemMatch: user._id}
+        }).then((group) => {
+            group.members.remove(user._id);
+            group.save().then(() => {
+                user.groups.remove(group._id);
+                user.save().then(() => {
+                    return res.status(200).send("Successfully left group");
+                }).catch(() => {
+                    return res.status(400).send("Failed to update user");
+                });
+            }).catch(() => {
+                return res.status(400).send("Failed to update group and user");
+            });
+        }).catch(() => {
+            return res.status(404).send("Group not found");
+        });
+    }).catch(() => {
+        return res.status(401).send("Invalid Login");
     });
-    group.members.remove(user._id);
-    return group;
-}
+});
 
+app.post('/groups/invite', (res, req) => {
+    
+});
 function inviteToGroup(user, groupId, invited) {
     var user = User.User.findByCredentials(user);
     var group = Group.Group.findOne({_id: groupId, members: {$elemMatch: user._id}});
@@ -83,17 +122,30 @@ function inviteToGroup(user, groupId, invited) {
     return group;
 }
 
-function removeFromGroup(owner, groupId, userId) {
-    var owner = User.User.findByCredentials(owner);
-    var group = Group.Group.findOne({
-        _id: groupId,
-        creator: owner._id,
-        members: {$elemMatch: userId}
+app.post('/groups/remove', (res, req) => {
+    var owner = _.pick(res.body, [user]);
+    var group = _.pick(res.body, [group]);
+    var user = _.pick(res.body, [toRemove]);
+    User.User.findByCredentials(owner).then((owner) => {
+        Group.Group.findOne({
+            _id: group._id,
+            owner: owner._id,
+            members: {$elemMatch: user._id}
+        }).then((group) => {
+            group.members.remove(user._id);
+            group.save().then(() => {
+                User.User.findOneAndUpdate({_id: user._id}, {$pull: {groups: group._id}}).then(() => {
+                    return res.status(200).send("User successfully Removed from group");
+                }).catch(() => {
+                    return res.status(400).send("Failed to update user");
+                });
+            }).catch(() => {
+                return res.status(400).send("Failed to update group and user");
+            });
+        }).catch(() => {
+            return res.status(404).send("Group not found");
+        });
+    }).catch(() => {
+        return res.status(401).send("Invalid Login");
     });
-    group.members.remove(userId);
-    var user = USer.User.findById(userId);
-    user.groups.remove(groupId);
-    group.save();
-    user.save();
-    return group;
-}
+});
