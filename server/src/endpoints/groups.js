@@ -11,6 +11,7 @@ function acceptInviteToGroup(user, groupId) {
     });
     group.invited.remove(user._id);
     group.memebers.push(user._id);
+    group.save();
 }
 
 function createGroup(creator, groupData) {
@@ -19,6 +20,7 @@ function createGroup(creator, groupData) {
         name: groupData.name,
         creator: creator._id
     });
+    group.save();
 }
 
 function declineInviteToGroup(user, groupId) {
@@ -28,17 +30,21 @@ function declineInviteToGroup(user, groupId) {
         invited: {$elemMatch: user._id}
     });
     group.invited.remove(user._id);
+    group.save();
 }
 
 function deleteGroup(owner, groupId) {
-    var owner = User.User.findByCredentials(owner);
-    var group = Group.Group.findById(groupId);
-    if (owner._id == group.creator)
-        group.remove();
+
 }
 
-function leaveGroup() {
-
+function leaveGroup(user, groupId) {
+    var user = User.User.findByCredentials(user);
+    var group = Group.Group.findOne({
+        _id: groupId,
+        members: {$elemMatch: user._id}
+    });
+    group.members.remove(user._id);
+    group.save();
 }
 
 function inviteToGroup(user, groupId, invited) {
@@ -48,6 +54,16 @@ function inviteToGroup(user, groupId, invited) {
     group.save();
 }
 
-function removeFromGroup() {
-
+function removeFromGroup(owner, groupId, userId) {
+    var owner = User.User.findByCredentials(owner);
+    var group = Group.Group.findOne({
+        _id: groupId,
+        creator: owner._id,
+        members: {$elemMatch: userId}
+    });
+    group.members.remove(userId);
+    var user = USer.User.findById(userId);
+    user.groups.remove(groupId);
+    group.save();
+    user.save();
 }
