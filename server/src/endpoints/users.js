@@ -91,36 +91,110 @@ app.post('/users/password/update', (req, res) => {
 
 //route for getting a user's calendars
 app.post('/users/calendars/get', (req, res) => {
+	var body = _.pick(req.body, ['email']);
 
+	User.findByEmail(body.email)
+		.then((user) => {
+			return res.status(200).send(user.calendars);
+		}).catch((err) => {
+			//user couldn't be found
+			return res.status(400).send(err);
+		});
 
 });
 
 //route for adding a calendar to a user
 app.post('/users/calendars/add', (req, res) => {
+	var body = _.pick(req.body, ['email', 'calendar', 'edit']);
 
+	User.findByEmail(body.email)
+		.then((user) => {
+			let calendar = {
+				calendarId: body.calendar,
+			    edit: body.edit
+			}
+			user.calendars.push(calendar)
 
+			user.save()
+				.then(() => {
+					return res.status(200).send(`successfully added ${body.calendar} to ${body.email}'s calendars'`);
+				}).catch((err) => {
+					//couldn't update the user
+					return res.status(400).send(err);
+				});
+		}).catch((err) => {
+			//couldn't find the user
+			return res.status(400).send(err);
+		});
 });
 
 //route for getting a user's groups
 app.post('/users/groups/get', (req, res) => {
+	var body = _.pick(req.body, ['email']);
 
+	User.findByEmail(body.email)
+		.then((user) => {
+			return res.status(200).send(user.groups);
+		}).catch((err) => {
+			//user couldn't be found
+			return res.status(400).send(err);
+		});
 
 });
 
 //route for adding a group to a user
 app.post('/users/groups/add', (req, res) => {
+	var body = _.pick(req.body, ['email', 'group']);
 
+	User.findByEmail(body.email)
+		.then((user) => {
+			user.groups.push(body.group)
 
+			user.save()
+				.then(() => {
+					return res.status(200).send(`successfully added ${body.group} to ${body.email}'s groups'`);
+				}).catch((err) => {
+					//couldn't update the user
+					return res.status(400).send(err);
+				});
+		}).catch((err) => {
+			//couldn't find the user
+			return res.status(400).send(err);
+		});
 });
 
 //route for getting a user's friends
 app.post('/users/friends/get', (req, res) => {
+	var body = _.pick(req.body, ['email']);
 
+	User.findByEmail(body.email)
+		.then((user) => {
+			return res.status(200).send(user.calendars);
+		}).catch((err) => {
+			//user couldn't be found
+			return res.status(400).send(err);
+		});
 
 });
 
 //route for adding a friend to a user
 app.post('/users/friends/add', (req, res) => {
+	var body = _.pick(req.body, ['email', 'friend']);
 
+	User.findByEmail(body.email)
+		.then((user) => {
+			user.friends.push(body.friend)
+
+			user.save()
+				.then(() => {
+					return res.status(200).send(`successfully added ${body.friend} to ${body.email}'s groups'`);
+				}).catch((err) => {
+					//couldn't update the user
+					return res.status(400).send(err);
+				});
+		}).catch((err) => {
+			//couldn't find the user
+			return res.status(400).send(err);
+		});
 
 });
