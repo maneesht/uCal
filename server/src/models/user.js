@@ -21,6 +21,7 @@ var UserSchema = new mongoose.Schema({
     edit: Boolean
   }],
   groups: [mongoose.Schema.Types.ObjectId],
+  groupinvites: [mongoose.Schema.Types.ObjectId],
   friends: [mongoose.Schema.Types.ObjectId]
 });
 
