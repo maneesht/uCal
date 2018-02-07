@@ -1,18 +1,12 @@
 const mongoose = require('mongoose');
 
 var UserSchema = new mongoose.Schema({
-  username: {
-    type: String,
-    required: true,
-    trim: true,
-    unique: true
-  },
   password: {
     type: String,
     require: true,
   },
 	email: {
-		type: String,
+	type: String,
     required: true,
     unique: true
   },
@@ -24,7 +18,39 @@ var UserSchema = new mongoose.Schema({
   friends: [mongoose.Schema.Types.ObjectId]
 });
 
-//TODO add functions for the users, like find by credentials
+//finds and returns a user object with the passed username and password
+UserSchema.statics.findByCredentials = function (email, password) {
+	var User = this;
+
+	return User.findOne({email}).then((user) => {
+		if (!user) {
+			return Promise.reject();
+		}
+
+		return new Promise((resolve, reject) => {
+			if (password === user.password) {
+				resolve(user);
+			}
+			else {
+				reject();
+			}
+		});
+	});
+};
+
+UserSchema.statics.findByEmail = function (email) {
+	var User = this;
+
+	return User.findOne({email}).then((user) => {
+		if (!user) {
+			return Promise.reject();
+		}
+
+		return new Promise((resolve, reject) => {
+				resolve(user);
+		});
+	});
+};
 
 
 
