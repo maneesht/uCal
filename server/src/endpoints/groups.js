@@ -11,7 +11,7 @@ function acceptInviteToGroup(user, groupId) {
     });
     group.invited.remove(user._id);
     group.memebers.push(user._id);
-    group.save();
+    return group;
 }
 
 function createGroup(creator, groupData) {
@@ -20,7 +20,7 @@ function createGroup(creator, groupData) {
         name: groupData.name,
         creator: creator._id
     });
-    group.save();
+    return group;
 }
 
 function declineInviteToGroup(user, groupId) {
@@ -30,7 +30,7 @@ function declineInviteToGroup(user, groupId) {
         invited: {$elemMatch: user._id}
     });
     group.invited.remove(user._id);
-    group.save();
+    return group;
 }
 
 function deleteGroup(owner, groupId) {
@@ -44,14 +44,14 @@ function leaveGroup(user, groupId) {
         members: {$elemMatch: user._id}
     });
     group.members.remove(user._id);
-    group.save();
+    return group;
 }
 
 function inviteToGroup(user, groupId, invited) {
     var user = User.User.findByCredentials(user);
     var group = Group.Group.findOne({_id: groupId, members: {$elemMatch: user._id}});
     group.members.push(invited);
-    group.save();
+    return group;
 }
 
 function removeFromGroup(owner, groupId, userId) {
@@ -66,4 +66,5 @@ function removeFromGroup(owner, groupId, userId) {
     user.groups.remove(groupId);
     group.save();
     user.save();
+    return group;
 }
