@@ -29,6 +29,9 @@ app.use(bodyParser.json());
 
 app.use('/', express.static('../uCalAngular/dist'));
 
+module.exports = app;
+require('./src/endpoints/users')
+
 //paths
 app.get('/*', (req, res) => {
     res.sendFile('index.html', {root: '../uCalAngular/dist'});
@@ -65,7 +68,5 @@ app.post('/users/find', (req, res) => {
 
 
 
-module.exports = app;
-require('./src/endpoints/users')
 //listen
 app.listen(port, () => console.log(`Listening on port ${port}`));
