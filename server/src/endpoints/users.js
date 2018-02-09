@@ -2,53 +2,40 @@ var User = require('../models/user').User;
 var Calendar = require('../models/calendar');
 var Group = require('../models/group');
 var Event = require('../models/event');
-const { mongoose, mongoUrl } = require('./src/database/mongoose');
-const { ObjectID } = require('mongodb');
+const _ = require('lodash');
+const app = require('../../server');
 
-function userCreated(err) {
-    if (err) 
-        throw err;
-    else    
-        console.log("User Created Successfully");
-}
 
-function userUpdated(err) {
-    if (err)
-        throw err;
-    else    
-        console.log("User Updated Successfully");
-}
+//route for creating a new user
+app.post('/users', (req, res) => {
+	var body = _.pick(req.body, ['email', 'password']);
 
-function createUser(userData) {
-    //TODO parse data passed here to make sure it is valid.
-    
-    //How to make this work
-    User.User.findOne({email: userData.email}, function (err, res) {
-        if (err || !res)
-            continue;
-        else {
-            console.log("username already exists");
-            
-        }
+	var user = new User(body);
+
+	user.save()
+		.then((user) => {
+			res.status(200).send(user);
+		}).catch((err) => {
+			res.status(400).send("Account already exists for: " + body.email);
+		});
+});
+
+app.patch('/users/:userID', (req, res) => {
+    var newPassword = _.pick(req.body, ['password']).password;
+
+    User.findById(req.params.userId).then((user) => {
+        user.password = newPassword;
+        console.log(user);
+        user.save().then((user) => {
+            res.status(200).send("Password Updated Successfully");
+        }).catch(() => {
+            res.status(400).send("aaaaaFailed to Update Password");
+        });
+    }).catch((err) => {
+        console.log(err);
+        res.status(400).send("Failed to Update Password");
     });
-
-    var user = new User(
-        //TODO put USER info here
-    );
-    user.save(userCreated);
-    var defaultCalendar = new Calendar({
-        name: 'Events',
-        owner: user._id
-    });
-    defaultCalendar.save(function(err) {
-        if (err)
-            throw err;
-        else
-            console.log("Default Calendar Created");
-    })
-    user.calendars.push(defaultCalendar)
-    user.save(userUpdated);
-}
+});
 
 function updateUser(userData) {
     User.User.findOneAndUpdate({_id: userData._id}, userData, userUpdated());

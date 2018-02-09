@@ -36,20 +36,6 @@ app.get('/*', (req, res) => {
 
 
 
-//route for creating a new user
-app.post('/users/create', (req, res) => {
-	var body = _.pick(req.body, ['email', 'password']);
-
-	var user = new User(body);
-
-	user.save()
-		.then(() => {
-			res.status(200).send("account created for: " + body.email);
-		}).catch((err) => {
-			res.status(400).send(err);
-		});
-});
-
 //route for logging in
 app.post('/users/login', (req, res) => {
 	var body = _.pick(req.body, ['email', 'password']);
@@ -79,7 +65,7 @@ app.post('/users/find', (req, res) => {
 
 
 
-
-
+module.exports = app;
+require('./src/endpoints/users')
 //listen
 app.listen(port, () => console.log(`Listening on port ${port}`));
