@@ -8,6 +8,7 @@ import { CalendarModule } from 'angular-calendar';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('CalendarComponent', () => {
   let comp: CalendarComponent;
@@ -15,7 +16,9 @@ describe('CalendarComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ CalendarComponent ],
-      imports: [NgbModule, CalendarModule.forRoot(), FormsModule, BrowserAnimationsModule, HttpClientTestingModule, RouterTestingModule]
+      imports: [NgbModule, CalendarModule.forRoot(), FormsModule, BrowserAnimationsModule, HttpClientTestingModule, RouterTestingModule, 
+        NgbModule.forRoot()],
+      schemas: [NO_ERRORS_SCHEMA]
     })
     .compileComponents();
   }));
