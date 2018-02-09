@@ -8,6 +8,10 @@ var CalendarSchema = new mongoose.Schema({
   description: String,
   events: [mongoose.Schema.Types.ObjectId],
   owner: mongoose.Schema.Types.ObjectId,
+  group: {
+    _id: mongoose.Schema.Types.ObjectId,
+    required: false
+  },
   users: [mongoose.Schema.Types.ObjectId]
 });
 
