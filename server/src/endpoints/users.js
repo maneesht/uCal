@@ -18,7 +18,10 @@ app.post('/users', (req, res) => {
             //Create a new default calendar for the user as well
             var calendar = new Calendar({
                 name: "Events",
-                owner: user._id
+                owner: user._id,
+                users: [
+                    user._id
+                ]
             });
             calendar.save().then((calendar) => {
                 User.findByIdAndUpdate(user._id, {$push: {calendars: {_id: calendar._id, edit: true}}}, {new: true}).then((user) => {
@@ -95,12 +98,64 @@ app.get('/users/:userID', (req, res) => {
         q.all(promises).then(() => {
             return res.status(200).send(data);
         });
-        
     }).catch(() => {
         return res.status(404).send(`User with ID ${req.params.userID} not Found`);
     });
 });
 
-function getUser(userData) {
-    return User.User.findOne(userData);
-}
+app.delete('/users/:userID', (req, res) => {
+    User.findByIdAndRemove(req.params.userID).then((user) => {
+
+        for (var x = 0; x < user.groups.length; x++) {
+            Group.findById(user.groups[x]).then((group) => {
+                if (group.owner.equals(user._id)) {
+                    for (var y = 0; y < group.invited.length; y++) {
+                        User.findByIdAndUpdate(group.invited[y], {$pull: {groupinvites: group._id}});
+                    }
+                    for (var y = 0; y < group.members.length; y++) {
+                        User.findByIdAndUpdate(group.members[y], {$pull: {groups: group._id}});
+                    }
+                    for (var y = 0; y < group.calendars.length; y++) {
+                        Calendar.findByIdAndRemove(group.calendars[y]).then((calendar) => {
+                            for (var z = 0; z < calendar.events.length; z++) {
+                                Evento.findByIdAndRemove(calendar.events[z]);
+                            };
+                        });
+                    };
+                } else {
+                    Group.findByIdAndUpdate(group._id, {$pull: {members: user._id}});
+                };
+            });
+            Group.findByIdAndUpdate(user.groups[x], {$pull: {members: user._id}});
+        };
+
+        for (var x = 0; x < user.groupinvites.length; x++) {
+            Group.findByIdAndUpdate(user.groupInvites[x], {$pull: {invited: user._id}});
+        };
+
+        for (var x = 0; x < user.friends.length; x++) {
+            User.findByIdAndUpdate(user.friends[x], {$pull: {friends: user._id}});
+        };
+
+        for (var x = 0; x < user.calendars.length; x++) {
+            Calendar.findById(user.calendars[x]).then((calendar) => {
+                if (calendar.owner = user._id) {
+                    for (var y = 0; y < calendar.users.length; y++) {
+                        User.findByIdAndUpdate(calendar.users[y], {$pull: {calendars: calendar._id}});
+                    }
+                    Calendar.findByIdAndRemove(calendar._id).then((calendar) => {
+                        for (var z = 0; z < calendar.events.length; z++) {
+                            Evento.findByIdAndRemove(calendar.events[z]);
+                        };
+                    });
+                } else {
+                    Calendar.findByIdAndUpdate(calendar._id, {$pull: {users: user._id}});
+                };
+            });
+        };
+
+        return res.status(202).send(`User ${req.params.userID} has been marked for deletion`)
+    }).catch(() => {
+        return res.status(404).send(`User with ID ${req.params.userID} not found`);
+    });
+});
