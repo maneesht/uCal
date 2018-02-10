@@ -16,7 +16,8 @@ var UserSchema = new mongoose.Schema({
   }],
   groups: [mongoose.Schema.Types.ObjectId],
   groupinvites: [mongoose.Schema.Types.ObjectId],
-  friends: [mongoose.Schema.Types.ObjectId]
+	friends: [mongoose.Schema.Types.ObjectId],
+	friendRequests: [mongoose.Schema.Types.ObjectId]
 });
 
 //finds and returns a user object with the passed username and password
