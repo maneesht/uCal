@@ -1,5 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { CalendarComponentStub } from './calendar.component.stub';
 import { LoginSuccessComponent } from './login-success.component';
 import { TokenHandlerService } from '../token-handler/token-handler.service';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -10,9 +11,11 @@ describe('LoginSuccessComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ LoginSuccessComponent ],
+      declarations: [ LoginSuccessComponent, CalendarComponentStub ],
       providers: [ TokenHandlerService ],
-      imports: [ RouterTestingModule ]
+      imports: [ RouterTestingModule.withRoutes([
+        {path: 'calendar', component: CalendarComponentStub }
+      ]) ]
     })
     .compileComponents();
   }));
