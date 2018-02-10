@@ -2,13 +2,14 @@ var User = require('../models/user').User;
 var Calendar = require('../models/calendar').Calendar;
 var Group = require('../models/group').Group;
 var Evento = require('../models/event').Evento;
+let express = require('express');
 const _ = require('lodash');
-const app = require('../../server');
 var q = require('q');
 
+let userRouter = express.Router();
 
 //route for creating a new user
-app.post('/users', (req, res) => {
+userRouter.post('/users', (req, res) => {
     var body = _.pick(req.body, ['email', 'password']);
 
 	var user = new User(body);
@@ -37,7 +38,7 @@ app.post('/users', (req, res) => {
         });
 });
 
-app.patch('/users/:userID', (req, res) => {
+userRouter.patch('/users/:userID', (req, res) => {
     //Mainly to be used in updating a users password
     //TODO: validate that the user requesting this is the user in userID
     var newPassword = _.pick(req.body, ['password']).password;
@@ -49,7 +50,7 @@ app.patch('/users/:userID', (req, res) => {
     });
 });
 
-app.get('/users/:userID', (req, res) => {
+userRouter.get('/users/:userID', (req, res) => {
     //Get the users calendars, events, groups, and friends
     var data = {
         userID: req.params.userID,
@@ -103,7 +104,7 @@ app.get('/users/:userID', (req, res) => {
     });
 });
 
-app.delete('/users/:userID', (req, res) => {
+userRouter.delete('/users/:userID', (req, res) => {
     User.findByIdAndRemove(req.params.userID).then((user) => {
 
         for (var x = 0; x < user.groups.length; x++) {
@@ -159,3 +160,4 @@ app.delete('/users/:userID', (req, res) => {
         return res.status(404).send(`User with ID ${req.params.userID} not found`);
     });
 });
+module.exports = userRouter;

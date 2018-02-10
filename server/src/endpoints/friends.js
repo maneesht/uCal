@@ -3,10 +3,11 @@ var Calendar = require('../models/calendar').Calendar;
 var Group = require('../models/group').Group;
 var Evento = require('../models/event').Evento;
 const _ = require('lodash');
-const app = require('../../server');
 const q = require('q');
+let express = require('express');
 
-app.post('/users/:userID/friends/:friendID', (req, res) => {
+let friendRouter = express.Router();
+friendRouter.post('/users/:userID/friends/:friendID', (req, res) => {
     //Create a friend request from userID to friendID
     User.findByIdAndUpdate(req.params.friendID, {$addToSet: {friendRequests: req.params.userID}}).then((users) => {
         return res.status(200).send("Friend request sent");
@@ -16,22 +17,22 @@ app.post('/users/:userID/friends/:friendID', (req, res) => {
     });
 });
 
-app.delete('/users/:userID/friends/:friendID', (req, res) => {
+friendRouter.delete('/users/:userID/friends/:friendID', (req, res) => {
     //Remove the friendship between userId and friendID
     User.findByIdAndUpdate(req.params.userID, {$pull: {friends: req.params.friendID}}, {new: true}).then((user) => {
         User.findByIdAndUpdate(req.params.friendID, {$pull: {friends: user._id}}).then((friend) => {
             return res.status(200).send("Removed Friend");
         }).catch((err) => {
             console.error(err);
-            return res.status(400).send("Some Error happened");
+            return res.status(400).send("Some Error hfriendRouterened");
         });
     }).catch((err) => {
         console.error(err);
-        return res.status(400).send("Some Error happened");
+        return res.status(400).send("Some Error hfriendRouterened");
     });
 });
 
-app.patch('/users/:userID/friends/:friendID', (req, res) => {
+friendRouter.patch('/users/:userID/friends/:friendID', (req, res) => {
     //Accept or decline a friend request
     //userID is accepting or declining friendID has sent the request
     var accept = _.pick(req.body, ['accept']).accept;
@@ -54,3 +55,4 @@ app.patch('/users/:userID/friends/:friendID', (req, res) => {
         });
     };
 });
+module.exports = friendRouter;

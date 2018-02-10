@@ -1,14 +1,13 @@
-import { read } from 'fs';
-
 var User = require('../models/user').User;
 var Calendar = require('../models/calendar').Calendar;
 var Group = require('../models/group').Group;
 var Evento = require('../models/event').Evento;
+let express = require('express');
 const _ = require('lodash');
-const app = require('../../server');
 const q = require('q');
+let groupRouter = express.Router();
 
-app.patch('/user/:userId/groups/:groupID/accept', (req, res) => {
+groupRouter.patch('/user/:userId/groups/:groupID/accept', (req, res) => {
     //accept or decline a group invite
     var accept = _.pick(req.body, ['accept']).accept;
     if (accept) {
@@ -37,7 +36,7 @@ app.patch('/user/:userId/groups/:groupID/accept', (req, res) => {
     };
 });
 
-app.patch('/groups/:groupID/invite', (req, res) => {
+groupRouter.patch('/groups/:groupID/invite', (req, res) => {
     //Invite users to the group
     var invites = _.pick(req.body, ['users']).users;
 
@@ -51,14 +50,14 @@ app.patch('/groups/:groupID/invite', (req, res) => {
 });
 
 
-app.post('/user/:userID/groups', (req, res) => {
+groupRouter.post('/user/:userID/groups', (req, res) => {
     //Create a new Group 
     var groupinfo = _.pick(req.body, ['group']).group;
     var group = new Group({
         name: groupinfo.name,
         creator: req.params.userID,
-        invited = ((invited in groupinfo) ? groupinfo.invited : []),
-        members = [req.params.userID],
+        invited: ((invited in groupinfo) ? groupinfo.invited : []),
+        members: [req.params.userID]
     });
     
     group.save().then((group) => {
@@ -71,7 +70,7 @@ app.post('/user/:userID/groups', (req, res) => {
     });
 });
 
-app.delete('/users/:userID/groups/:groupID', (req, res) => {
+groupRouter.delete('/users/:userID/groups/:groupID', (req, res) => {
     Group.findOne({
         _id: req.params.groupID,
         $elemMatch: {members: req.params.userID}
@@ -92,11 +91,11 @@ app.delete('/users/:userID/groups/:groupID', (req, res) => {
     });
 });
 
-app.delete('/groups/:groupId', (req, res) => {
+groupRouter.delete('/groups/:groupId', (req, res) => {
 
 });
 
-app.get('/groups/:groupId', (req, res) => {
+groupRouter.get('/groups/:groupId', (req, res) => {
     Group.findById(req.params.groupID).then((group) => {
         var data = {
             name: group.name,
@@ -149,6 +148,7 @@ app.get('/groups/:groupId', (req, res) => {
             return res.status(200).send(data);
         })
     }).catch(() => {
-        return res.status(404).send("Group not Found");
+        return res.status(400).send("Group not Found");
     })
 });
+module.exports = groupRouter;

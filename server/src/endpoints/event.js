@@ -2,12 +2,13 @@ var User = require('../models/user');
 var Calendar = require('../models/calendar');
 var Group = require('../models/group');
 var UEvent = require('../models/event');
+const express = require('express');
 const _ = require('lodash');
-const app = require ("../../server");
 
 
+let eventRouter = express.Router();
 //Create Event
-app.post('/events/create', (req, res) => {
+eventRouter.post('/events/create', (req, res) => {
     var eventData = _.pick(req.body, ['name', 'date', 'allday', 'startTime', 'endTime', 'location', 'description', 'creator', 'calendar']);
     var event = {
         //Put data here NOT Sure yet
@@ -47,7 +48,7 @@ app.post('/events/create', (req, res) => {
 });
 
 //Update Event
-app.post('/events/update', (req, res) => {
+eventRouter.post('/events/update', (req, res) => {
     var eventData = _.pick(req.body, ['name', 'date', 'allday', 'startTime', 'endTime', 'location', 'description', 'creator', 'calendar']);
     UEvent.findByIDAndUpdate(req.params.eventID, eventData).then((event) => {
         return res.status(200).send(event);
@@ -57,7 +58,7 @@ app.post('/events/update', (req, res) => {
 });
 
 //Get Event
-app.get('/events/get', (req, res) => {
+eventRouter.get('/events/get', (req, res) => {
     UEvent.findById(req.params.eventID).then((event) => {
         var data = {
             //Put data here NOT Sure yet
@@ -78,7 +79,7 @@ app.get('/events/get', (req, res) => {
 });
 
 //Delete Event
-app.delete('/events/:eventID', (req, res) => {
+eventRouter.delete('/events/:eventID', (req, res) => {
     var event = UEvent.findById(req.params.eventID);
     UEvent.findByIdAndRemove(req.params.eventID).then((event) => {
         //remove from calendar
@@ -86,9 +87,10 @@ app.delete('/events/:eventID', (req, res) => {
             return res.status(200).send("event removed from calendar");
         });
     }).catch((err) => {
-        return res.status(400).send("I hate Eli");
+        return res.status(400).send(err);
     })
 });
+module.exports = eventRouter;
 
 //declineRSVP
 //acceptRSVP

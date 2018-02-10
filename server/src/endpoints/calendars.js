@@ -3,10 +3,11 @@ var Calendar = require('../models/calendar').Calendar;
 var Group = require('../models/group').Group;
 var Evento = require('../models/event').Evento;
 const _ = require('lodash');
-const app = require('../../server');
+const express = require('express');
 const q = require('q');
 
-app.post('/users/:userID/calendars', (req, res) => {
+const calendarRouter = express.Router();
+calendarRouter.post('/users/:userID/calendars', (req, res) => {
     //Create a calendar for a user
     var calendarData = _.pick(req.body, ['calendar']).calendar;
 
@@ -28,7 +29,7 @@ app.post('/users/:userID/calendars', (req, res) => {
     });
 });
 
-app.post('/groups/:groupID/calendars', (req, res) => {
+calendarRouter.post('/groups/:groupID/calendars', (req, res) => {
     //Create a calendar for a group
     var calendarDAta = _.pick(req.body, ['calendar']).calendar;
 
@@ -61,7 +62,7 @@ app.post('/groups/:groupID/calendars', (req, res) => {
     }); 
 });
 
-app.delete('/calendars/:calendarID', (req, res) => {
+calendarRouter.delete('/calendars/:calendarID', (req, res) => {
     //delete a calendar
     Calendar.findByIdAndRemove(req.params.calendarID).then((calendar) => {
         for (var x = 0; x < calendar.events.length; x++) {
@@ -75,7 +76,7 @@ app.delete('/calendars/:calendarID', (req, res) => {
     })
 });
 
-app.get('/calendars/:calendarID', (req, res) => {
+calendarRouter.get('/calendars/:calendarID', (req, res) => {
     Calendar.findById(req.params.calendarID).then((calendar) => {
         var data = {
             name: calendar.name,
@@ -99,7 +100,7 @@ app.get('/calendars/:calendarID', (req, res) => {
     })
 });
 
-app.patch('/calendars/:calendarID', (req, res) => {
+calendarRouter.patch('/calendars/:calendarID', (req, res) => {
     //update calendar information (name, description)
     var updated = _.pick(req.body, ['calendar']).calendar;
     var data = {};
@@ -116,7 +117,7 @@ app.patch('/calendars/:calendarID', (req, res) => {
     });
 });
 
-app.patch('/calendars/:calendarID/share', (req, res) => {
+calendarRouter.patch('/calendars/:calendarID/share', (req, res) => {
     //Share the calendar to other users
     var user = _.pick(req.body, ['users']).users;
     var editable = _.pick(req.body, ['edit']).edit;
@@ -172,3 +173,4 @@ function getCalendar(calendarId) {
 function updateCalendar(calendarData) {
     //TODO
 }
+module.exports = calendarRouter;
