@@ -92,4 +92,4 @@ const populateEvents = (done) => {
 };
 
 
-module.exports = { users, populateUsers };
+module.exports = { users, populateUsers, populateCalendars, populateEvents };
