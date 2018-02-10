@@ -33,6 +33,9 @@ app.use(bodyParser.json());
 
 app.use('/', express.static('../uCalAngular/dist'));
 
+module.exports = app;
+require('./src/endpoints/users')
+
 //paths
 app.get('/*', (req, res) => {
     res.sendFile('index.html', {root: '../uCalAngular/dist'});
@@ -40,8 +43,29 @@ app.get('/*', (req, res) => {
 
 
 
+//route for logging in
+app.post('/users/login', (req, res) => {
+	var body = _.pick(req.body, ['email', 'password']);
 
+	User.findByCredentials(body.email, body.password)
+		.then((user) => {
+			res.status(200).send(user);
+		}).catch((err) => {
+			res.status(400).send(err);
+		});
+});
 
+//route for finding a user by it's email
+app.post('/users/find', (req, res) => {
+	var body = _.pick(req.body, ['email']);
+
+	User.findByEmail(body.email)
+		.then((user) => {
+			res.status(200).send(user);
+		}).catch((err) => {
+			res.status(400).send(err);
+		});
+});
 
 
 

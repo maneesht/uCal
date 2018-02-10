@@ -1,200 +1,161 @@
 var User = require('../models/user').User;
-var Calendar = require('../models/calendar');
-var Group = require('../models/group');
-var Evento = require('../models/event');
-
-const { mongoose, mongoUrl } = require('./src/database/mongoose');
-const { ObjectID } = require('mongodb');
+var Calendar = require('../models/calendar').Calendar;
+var Group = require('../models/group').Group;
+var Evento = require('../models/event').Evento;
+const _ = require('lodash');
+const app = require('../../server');
+var q = require('q');
 
 
 //route for creating a new user
-app.post('/users/create', (req, res) => {
-	var body = _.pick(req.body, ['email', 'password']);
+app.post('/users', (req, res) => {
+    var body = _.pick(req.body, ['email', 'password']);
 
 	var user = new User(body);
 
-	user.save()
-		.then(() => {
-			return res.status(200).send("account created for: " + body.email);
-		}).catch((err) => {
-			return res.status(400).send(err);
-		});
+    user.save()
+        .then((user) => {
+            //Create a new default calendar for the user as well
+            var calendar = new Calendar({
+                name: "Events",
+                owner: user._id,
+                users: [
+                    user._id
+                ]
+            });
+            calendar.save().then((calendar) => {
+                User.findByIdAndUpdate(user._id, {$push: {calendars: {_id: calendar._id, edit: true}}}, {new: true}).then((user) => {
+                    return res.status(200).send(user);
+                }).catch((err) => {
+                    return res.status(400).send("Failed to save default calendar to user");
+                });
+            }).catch(() => {
+                return res.status(400).send("User created but default calendar creation failed.")
+            }); 
+        }).catch((err) => {
+            res.status(400).send("Account already exists for: " + body.email);
+        });
 });
 
-//route for validating a user's credentials
-app.post('/users/validate', (req, res) => {
-	var body = _.pick(req.body, ['email', 'password']);
+app.patch('/users/:userID', (req, res) => {
+    //Mainly to be used in updating a users password
+    //TODO: validate that the user requesting this is the user in userID
+    var newPassword = _.pick(req.body, ['password']).password;
 
-	User.findByCredentials(body.email, body.password)
-		.then((user) => {
-			return res.status(200).send(user);
-		}).catch((err) => {
-			return res.status(400).send(err);
-		});
+    User.findByIdAndUpdate(req.params.userID, {$set: {password: newPassword}}).then((user) => {
+        return res.status(200).send("Password Updated Successfully");
+    }).catch((err) => {
+        return res.status(400).send("Failed to Update Password");
+    });
 });
 
-//route for finding a user by it's email
-app.post('/users/find', (req, res) => {
-	var body = _.pick(req.body, ['email']);
-
-	User.findByEmail(body.email)
-		.then((user) => {
-			return res.status(200).send(user);
-		}).catch((err) => {
-			return res.status(400).send(err);
-		});
+app.get('/users/:userID', (req, res) => {
+    //Get the users calendars, events, groups, and friends
+    var data = {
+        userID: req.params.userID,
+        groups: [],
+        calendars: [],
+        friends: []
+    }
+    User.findById(req.params.userID).then((user) => {
+        var promises = [];
+        for (var x = 0; x < user.groups.length; x++) {
+            promises.push(Group.findById(user.groups[x]).then((group) => {
+                data.groups.push(group);
+            }).catch(() => {
+                return res.status(400).send("A error occurred while processing request.");
+            }));
+        };
+        for (var x = 0; x < user.calendars.length; x++) {
+            promises.push(Calendar.findById(user.calendars[x]).then((calendar) => {
+                data.calendars.push({
+                    name: calendar.name,
+                    description: calendar.description,
+                    owner: calendar.owner,
+                    events: []
+                });
+                for (var y = 0; y < calendar.events.length; y++) {
+                    Evento.findById(calendar.events[y]).then((event) => {
+                        data.calendars[x].events.push(event);
+                    }).catch(() => {
+                        return res.status(400).send("A error occurred while processing request.");
+                    });
+                };
+            }).catch(() => {
+                return res.status(400).send("A error occurred while processing request.");
+            }));
+        };
+        for (var x = 0; x < user.friends.length; x++) {
+            promises.push(User.findById(user.friends[x]).then((friend) => {
+                data.friends.push({
+                    friendID: friend._id,
+                    email: friend.email
+                });
+            }).catch(() =>{
+                return res.status(400).send("A error occurred while processing request.");
+            }));
+        };
+        q.all(promises).then(() => {
+            return res.status(200).send(data);
+        });
+    }).catch(() => {
+        return res.status(404).send(`User with ID ${req.params.userID} not Found`);
+    });
 });
 
-//route for updating a user email
-app.post('/users/email/update', (req, res) => {
-	var body = _.pick(req.body, ['email', 'password', 'newEmail']);
+app.delete('/users/:userID', (req, res) => {
+    User.findByIdAndRemove(req.params.userID).then((user) => {
 
-	User.findByCredentials(body.email, body.password)
-		.then((user) => {
-			user.email = body.email
+        for (var x = 0; x < user.groups.length; x++) {
+            Group.findById(user.groups[x]).then((group) => {
+                if (group.owner.equals(user._id)) {
+                    for (var y = 0; y < group.invited.length; y++) {
+                        User.findByIdAndUpdate(group.invited[y], {$pull: {groupinvites: group._id}});
+                    }
+                    for (var y = 0; y < group.members.length; y++) {
+                        User.findByIdAndUpdate(group.members[y], {$pull: {groups: group._id}});
+                    }
+                    for (var y = 0; y < group.calendars.length; y++) {
+                        Calendar.findByIdAndRemove(group.calendars[y]).then((calendar) => {
+                            for (var z = 0; z < calendar.events.length; z++) {
+                                Evento.findByIdAndRemove(calendar.events[z]);
+                            };
+                        });
+                    };
+                } else {
+                    Group.findByIdAndUpdate(group._id, {$pull: {members: user._id}});
+                };
+            });
+            Group.findByIdAndUpdate(user.groups[x], {$pull: {members: user._id}});
+        };
 
-			user.save()
-				.then(() => {
-					return res.status(200).send("updated the email to: " + body.newEmail);
-				}).catch((err) => {
-					//couldn't update the user
-					return res.status(400).send(err);
-				});
-		}).catch((err) => {
-			//couldn't find the user
-			return res.status(400).send(err);
-		});
+        for (var x = 0; x < user.groupinvites.length; x++) {
+            Group.findByIdAndUpdate(user.groupInvites[x], {$pull: {invited: user._id}});
+        };
 
-});
+        for (var x = 0; x < user.friends.length; x++) {
+            User.findByIdAndUpdate(user.friends[x], {$pull: {friends: user._id}});
+        };
 
-//route for updating a user password
-app.post('/users/password/update', (req, res) => {
-	var body = _.pick(req.body, ['email', 'password', 'newPassword']);
+        for (var x = 0; x < user.calendars.length; x++) {
+            Calendar.findById(user.calendars[x]).then((calendar) => {
+                if (calendar.owner = user._id) {
+                    for (var y = 0; y < calendar.users.length; y++) {
+                        User.findByIdAndUpdate(calendar.users[y], {$pull: {calendars: calendar._id}});
+                    }
+                    Calendar.findByIdAndRemove(calendar._id).then((calendar) => {
+                        for (var z = 0; z < calendar.events.length; z++) {
+                            Evento.findByIdAndRemove(calendar.events[z]);
+                        };
+                    });
+                } else {
+                    Calendar.findByIdAndUpdate(calendar._id, {$pull: {users: user._id}});
+                };
+            });
+        };
 
-	User.findByCredentials(body.email, body.password)
-		.then((user) => {
-			user.password = body.newPassword
-
-			user.save()
-				.then(() => {
-					return res.status(200).send("updated the password to: " + body.newPassword);
-				}).catch((err) => {
-					//couldn't update the user
-					return res.status(400).send(err);
-				});
-		}).catch((err) => {
-			//couldn't find the user
-			return res.status(400).send(err);
-		});
-
-});
-
-//route for getting a user's calendars
-app.post('/users/calendars/get', (req, res) => {
-	var body = _.pick(req.body, ['email']);
-
-	User.findByEmail(body.email)
-		.then((user) => {
-			return res.status(200).send(user.calendars);
-		}).catch((err) => {
-			//user couldn't be found
-			return res.status(400).send(err);
-		});
-
-});
-
-//route for adding a calendar to a user
-app.post('/users/calendars/add', (req, res) => {
-	var body = _.pick(req.body, ['email', 'calendar', 'edit']);
-
-	User.findByEmail(body.email)
-		.then((user) => {
-			let calendar = {
-				calendarId: body.calendar,
-			    edit: body.edit
-			}
-			user.calendars.push(calendar)
-
-			user.save()
-				.then(() => {
-					return res.status(200).send(`successfully added ${body.calendar} to ${body.email}'s calendars'`);
-				}).catch((err) => {
-					//couldn't update the user
-					return res.status(400).send(err);
-				});
-		}).catch((err) => {
-			//couldn't find the user
-			return res.status(400).send(err);
-		});
-});
-
-//route for getting a user's groups
-app.post('/users/groups/get', (req, res) => {
-	var body = _.pick(req.body, ['email']);
-
-	User.findByEmail(body.email)
-		.then((user) => {
-			return res.status(200).send(user.groups);
-		}).catch((err) => {
-			//user couldn't be found
-			return res.status(400).send(err);
-		});
-
-});
-
-//route for adding a group to a user
-app.post('/users/groups/add', (req, res) => {
-	var body = _.pick(req.body, ['email', 'group']);
-
-	User.findByEmail(body.email)
-		.then((user) => {
-			user.groups.push(body.group)
-
-			user.save()
-				.then(() => {
-					return res.status(200).send(`successfully added ${body.group} to ${body.email}'s groups'`);
-				}).catch((err) => {
-					//couldn't update the user
-					return res.status(400).send(err);
-				});
-		}).catch((err) => {
-			//couldn't find the user
-			return res.status(400).send(err);
-		});
-});
-
-//route for getting a user's friends
-app.post('/users/friends/get', (req, res) => {
-	var body = _.pick(req.body, ['email']);
-
-	User.findByEmail(body.email)
-		.then((user) => {
-			return res.status(200).send(user.calendars);
-		}).catch((err) => {
-			//user couldn't be found
-			return res.status(400).send(err);
-		});
-
-});
-
-//route for adding a friend to a user
-app.post('/users/friends/add', (req, res) => {
-	var body = _.pick(req.body, ['email', 'friend']);
-
-	User.findByEmail(body.email)
-		.then((user) => {
-			user.friends.push(body.friend)
-
-			user.save()
-				.then(() => {
-					return res.status(200).send(`successfully added ${body.friend} to ${body.email}'s groups'`);
-				}).catch((err) => {
-					//couldn't update the user
-					return res.status(400).send(err);
-				});
-		}).catch((err) => {
-			//couldn't find the user
-			return res.status(400).send(err);
-		});
-
+        return res.status(202).send(`User ${req.params.userID} has been marked for deletion`)
+    }).catch(() => {
+        return res.status(404).send(`User with ID ${req.params.userID} not found`);
+    });
 });
