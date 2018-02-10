@@ -27,13 +27,13 @@ const calendars = [{
 	name: "Test Calendar 1",
 	description: "The description!",
 	owner: userOneId,
-	users: userOne
+	users: users[0]
 }, {
 	_id: calendarTwoId,
 	name: "Test Calendar 2",
 	description: "The description 2!",
 	owner: userTwoId,
-	users: userTwo
+	users: users[1]
 }];
 
 const events = [{
