@@ -15,15 +15,15 @@ const { Evento } = require('./src/models/event');
 const { Calendar } = require('./src/models/calendar');
 const { Group } = require('./src/models/group');
 
-//include endpoint functions
-require('./src/endpoints/users');
-require('./src/endpoints/event');
-require('./src/endpoints/friends');
-require('./src/endpoints/calendars');
-require('./src/endpoints/groups');
+
 
 //set up server
 let app = express();
+let userRouter = require('./src/endpoints/users');
+let eventRouter = require('./src/endpoints/event');
+let friendsRouter = require('./src/endpoints/friends');
+let calendarRouter = require('./src/endpoints/calendars');
+let groupRouter = require('./src/endpoints/groups');
 const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.urlencoded({
@@ -32,9 +32,13 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 
 app.use('/', express.static('../uCalAngular/dist'));
+app.use('/', userRouter);
+app.use('/', friendsRouter);
+app.use('/', groupRouter);
+app.use('/', eventRouter);
+app.use('/', calendarRouter);
 
-module.exports = app;
-require('./src/endpoints/users')
+//include endpoint functions
 
 //paths
 app.get('/*', (req, res) => {
@@ -74,4 +78,5 @@ app.post('/users/find', (req, res) => {
 
 //listen
 app.listen(port, () => console.log(`Listening on port ${port}`));
-module.exports = { app };
+
+module.exports = app;
