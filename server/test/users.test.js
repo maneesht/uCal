@@ -163,10 +163,11 @@ describe('GET /users/:userID', () => {
 					.expect((res) => {
 						expect(res.body).toExist;
 						expect(res.body).toContainKeys(['email', 'userId', 'groups', 'calendars', 'friends']);
-						expect(res.body.userID).toEqual(id);
-						expect(res.body.calendars).toBeAn(Array);
 						expect(res.body.email).toEqual(users[0].email);
+						expect(res.body.userId).toEqual(id);
 						expect(res.body.groups).toBeAn(Array);	
+						expect(res.body.calendars).toBeAn(Array);
+						expect(res.body.friends).toBeAn(Array);
 					})
 					.end(done);
 			});
