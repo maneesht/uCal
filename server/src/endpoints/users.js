@@ -12,7 +12,16 @@ let userRouter = express.Router();
 //route for creating a new user
 userRouter.post('/users', (req, res) => {
     var body = _.pick(req.body, ['email', 'password']);
-    var user = new User(body);
+
+    if (body['email'] == undefined || body['password'] == undefined)
+        return res.status(400).send("Required Fields Unspecified");
+    
+    //Regular Expression for finding email addresses
+    var re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+    if (!re.test(body['email']))
+        return res.status(400).send("email not a correct email format");
+
+	var user = new User(body);
 
     user.save()
         .then(() => {
@@ -155,13 +164,15 @@ userRouter.patch('/users/:userID', (req, res) => {
 userRouter.get('/users/:userID', (req, res) => {
     //Get the users calendars, events, groups, and friends
     var data = {
-        userID: req.params.userID,
+        email: '',
+        userId: req.params.userID,
         groups: [],
         calendars: [],
         friends: []
     }
     User.findById(req.params.userID).then((user) => {
         var promises = [];
+        data.email = user.email;
         for (var x = 0; x < user.groups.length; x++) {
             promises.push(Group.findById(user.groups[x]).then((group) => {
                 data.groups.push(group);

@@ -11,9 +11,8 @@ friendRouter.post('/users/:userID/friends/:friendID', (req, res) => {
     //Create a friend request from userID to friendID
     User.findByIdAndUpdate(req.params.friendID, { $addToSet: { friendRequests: req.params.userID } }).then((users) => {
         return res.status(200).send("Friend request sent");
-    }).catch(() => {
-        console.error(err);
-        return res.status(400).send("Failed to send friend request")
+    }).catch((err) => {
+        return res.status(404).send("User not Found")
     });
 });
 
@@ -23,11 +22,9 @@ friendRouter.delete('/users/:userID/friends/:friendID', (req, res) => {
         User.findByIdAndUpdate(req.params.friendID, { $pull: { friends: user._id } }).then((friend) => {
             return res.status(200).send("Removed Friend");
         }).catch((err) => {
-            console.error(err);
             return res.status(400).send("Some Error hfriendRouterened");
         });
     }).catch((err) => {
-        console.error(err);
         return res.status(400).send("Some Error hfriendRouterened");
     });
 });
@@ -36,6 +33,10 @@ friendRouter.patch('/users/:userID/friends/:friendID', (req, res) => {
     //Accept or decline a friend request
     //userID is accepting or declining friendID has sent the request
     var accept = _.pick(req.body, ['accept']).accept;
+
+    if (accept == undefined)
+        return res.status(400).send("Required field 'accept: boolean' not specified");
+
     if (accept) {
         User.findByIdAndUpdate(req.params.userID, { $push: { friends: req.params.friendID }, $pull: { friendRequests: req.params.friendID } }, { new: true }).then((user) => {
             User.findByIdAndUpdate(req.params.userID, { $push: { friends: user._id } }).then((friend) => {
@@ -44,14 +45,15 @@ friendRouter.patch('/users/:userID/friends/:friendID', (req, res) => {
                 console.error(err);
             });
         }).catch((err) => {
-            console.error(err);
+            return res.status(404).send("No friend request exists between these users")
         })
     } else {
-        User.findByIdAndUpdate(req.params.userID, { $pull: { friendRequests: req.params.friendID } }).then((user) => {
-            return res.status(200).send("Successfully declined friends request");
+        User.findOneAndUpdate({_id: req.params.userID, friendRequests: req.params.friendID}, {$pull: {friendRequests: req.params.friendID}}, {new: true}).then((user) => {
+            if (user == null)
+                throw "NotFound"
+            return res.status(200).send("Successfully declined friend request");
         }).catch((err) => {
-            console.error(err);
-            return res.status(400).send("Failed to decline request");
+            return res.status(404).send("No friend request exists between these users")
         });
     };
 });
