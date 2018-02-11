@@ -67,4 +67,28 @@ describe('CalendarComponent', () => {
     fixture.detectChanges();
     expect(comp.view).toEqual('month');
   }));
+  it('should update the defaultStart date and end date', async(() => {
+    fixture.detectChanges();
+    const compiled = fixture.debugElement.nativeElement;
+    let today = new Date("January 11, 2018 13:31:00");
+    let result = comp.addDates(today);
+    expect(result).toBe(true);
+    expect(comp.defaultStartDate).toEqual("2018-01-11");
+  }));
+  it('should not update the defaultStart date when undefined', async(() => {
+    fixture.detectChanges();
+    const compiled = fixture.debugElement.nativeElement;
+    let today = new Date("January 11, 2018 1:31:00PM");
+    let result = comp.addDates(today);
+    expect(result).toBe(false);
+    expect(comp.defaultStartDate).toEqual(undefined);
+  }));
+  it('should not update the defaultStart date when undefined', async(() => {
+    fixture.detectChanges();
+    const compiled = fixture.debugElement.nativeElement;
+    let today;
+    let result = comp.addDates(today);
+    expect(result).toBe(false);
+    expect(comp.defaultStartDate).toEqual(undefined);
+  }));
 });

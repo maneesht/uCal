@@ -33,6 +33,10 @@ app.use(passport.session());
 
 //authentication check for username and password
 passport.use(new LocalStrategy(
+    {
+        usernameField: 'email',
+        passwordField: 'password'
+    },
     (email, password, done) => {
         // insert validation code here from mongo
         //for more help, take a look at https://scotch.io/tutorials/easy-node-authentication-setup-and-local

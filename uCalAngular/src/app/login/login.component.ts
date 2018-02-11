@@ -11,22 +11,21 @@ import { TokenHandlerService } from '../token-handler/token-handler.service';
 })
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
-  err: string;
   constructor(private fb: FormBuilder, private http: HttpClient, private router: Router, private tokenHandler: TokenHandlerService) {
     this.createForm();
   }
   createForm() {
     this.loginForm = this.fb.group({
-      username: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]
     })
   }
   onSubmit() {
-    let username = this.loginForm.get('username').value;
+    let email = this.loginForm.get('email').value;
     let password = this.loginForm.get('password').value;
     const headers = new HttpHeaders().set('responseType', 'text');
     const body = new HttpParams()
-      .set('username', username)
+      .set('email', email)
       .set('password', password);
     this.http.post('/login', body)
       .subscribe((obj: any) => {

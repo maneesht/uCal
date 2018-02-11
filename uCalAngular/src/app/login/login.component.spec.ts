@@ -28,4 +28,42 @@ describe('LoginComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+  it('should invalidate the form when the email is empty', async(() => {
+    let form = component.loginForm;
+    let emailCtrl = form.controls.email;
+    emailCtrl.setValue('');
+    expect(form.valid).toEqual(false);
+  }));
+  it('should invalidate the form when the password is empty', async(() => {
+    let form = component.loginForm;
+    let passwordCtrl = form.controls.password;
+    passwordCtrl.setValue('');
+    expect(form.valid).toEqual(false);
+  }));
+  it('should invalidate the form when both fields are empty', async(() => {
+    let form = component.loginForm;
+    let passwordCtrl = form.controls.password;
+    let emailCtrl = form.controls.email;
+    passwordCtrl.setValue('');
+    emailCtrl.setValue('');
+    expect(form.valid).toEqual(false);
+  }));
+  it('should invalidate the form when the email is not an email', async(() => {
+    let form = component.loginForm;
+    let passwordCtrl = form.controls.password;
+    let emailCtrl = form.controls.email;
+    passwordCtrl.setValue('testing123...');
+    emailCtrl.setValue('testing');
+    expect(form.valid).toEqual(false);
+  }));
+  it('should validate the form when both fields are filled', async(() => {
+    let form = component.loginForm;
+    let passwordCtrl = form.controls.password;
+    let emailCtrl = form.controls.email;
+    passwordCtrl.setValue('testing123...');
+    emailCtrl.setValue('testing@gmail.com');
+    expect(form.valid).toEqual(true);
+  }));
+  
 });
+

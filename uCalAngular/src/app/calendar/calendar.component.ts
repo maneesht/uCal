@@ -11,11 +11,11 @@ import {
 } from 'date-fns';
 import { CalendarEvent, CalendarEventTitleFormatter } from 'angular-calendar';
 import { CustomEventTitleFormatter } from './custom-event-title-formatter.provider';
-import {NgbModal, ModalDismissReasons} from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { Subject } from 'rxjs/Subject';
 
 
-  
+
 
 @Component({
   selector: 'app-calendar',
@@ -42,16 +42,16 @@ export class CalendarComponent implements OnInit {
   startTime: string;
   endTime: string;
 
-  events: CalendarEvent[] = [ 
+  events: CalendarEvent[] = [
     {
       start: new Date(2018, 1, 14, 13, 30),
       end: new Date(2018, 1, 15, 9, 30),
       title: 'Lunch with Manu',
-      color: {primary: "blue", secondary: "lightblue"}
+      color: { primary: "blue", secondary: "lightblue" }
     }];
-    
-    refresh: Subject<any> = new Subject();
-  constructor(private modalService: NgbModal) {}
+
+  refresh: Subject<any> = new Subject();
+  constructor(private modalService: NgbModal) { }
   closeResult: string;
 
   open(content) {
@@ -60,22 +60,26 @@ export class CalendarComponent implements OnInit {
     });
   }
   addDates(date: Date) {
-    let month: string; 
+    if(!date || date.toDateString() === "Invalid Date") {
+      return false;
+    }
+    let month: string;
     let day: string;
     let m = date.getMonth() + 1;
     let d = date.getDate();
-    if(m < 10) {
+    if (m < 10) {
       month = "0" + m;
     } else {
       month = m + "";
     }
-    if(d < 10) {
+    if (d < 10) {
       day = "0" + d;
     } else {
       day = d + "";
     }
     this.defaultStartDate = date.getFullYear() + "-" + month + "-" + day;
     this.defaultEndDate = date.getFullYear() + "-" + month + "-" + day;
+    return true;
   }
 
   private getDismissReason(reason: any): string {
@@ -84,7 +88,7 @@ export class CalendarComponent implements OnInit {
     } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
       return 'by clicking on a backdrop';
     } else {
-      return  `with: ${reason}`;
+      return `with: ${reason}`;
     }
   }
 
@@ -103,7 +107,7 @@ export class CalendarComponent implements OnInit {
     this.eventEndDate.setHours(+endHours[0], +endHours[1]);
     this.eventEndDate.setDate(this.eventEndDate.getDate() + 1);
     let test = new Date(this.start);
-    this.events.push({start: this.eventStartDate, end: this.eventEndDate, title: this.eventName, color: {primary: "blue", secondary: "lightblue"}});
+    this.events.push({ start: this.eventStartDate, end: this.eventEndDate, title: this.eventName, color: { primary: "blue", secondary: "lightblue" } });
     this.refresh.next();
     console.log(this.events);
   }
@@ -130,7 +134,7 @@ export class CalendarComponent implements OnInit {
   handleDay(day) {
     this.viewDate = day.date;
   }
-  setView(view){
+  setView(view) {
     this.view = view;
   }
 }
