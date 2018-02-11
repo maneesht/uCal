@@ -12,6 +12,7 @@ const { users, populateUsers } = require('./seed/seed');
 beforeEach(populateUsers);
 
 describe('POST /users/validate', () => {
+    /*
     it('should return user', (done) => {
         var email = users[0].email;
         var password = users[0].password;
@@ -41,4 +42,5 @@ describe('POST /users/validate', () => {
             })
             .end(done);
     });
+    */
 });

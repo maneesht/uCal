@@ -31,7 +31,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 let userRouter = require('./src/endpoints/users');
-let eventRouter = require('./src/endpoints/event');
+let eventRouter = require('./src/endpoints/events');
 let friendsRouter = require('./src/endpoints/friends');
 let calendarRouter = require('./src/endpoints/calendars');
 let groupRouter = require('./src/endpoints/groups');
