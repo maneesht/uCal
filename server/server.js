@@ -77,6 +77,8 @@ app.post('/users/find', (req, res) => {
 
 
 //listen
-app.listen(port, () => console.log(`Listening on port ${port}`));
+if (!module.parent) {
+	app.listen(port, () => console.log(`Listening on port ${port}`));
+}
 
 module.exports = app;
