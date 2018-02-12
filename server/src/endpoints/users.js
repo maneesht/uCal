@@ -9,18 +9,22 @@ var q = require('q');
 let userRouter = express.Router();
 
 //route for creating a new user
-userRouter.post('/users', (req, res) => {
+userRouter.post('/users/create', (req, res) => {
     var body = _.pick(req.body, ['email', 'password']);
 
     if (body['email'] == undefined || body['password'] == undefined)
         return res.status(400).send("Required Fields Unspecified");
-    
+
     //Regular Expression for finding email addresses
     var re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
     if (!re.test(body['email']))
         return res.status(400).send("email not a correct email format");
 
+	console.log(body);
 	var user = new User(body);
+	console.log(user);
+
+	//TODO duplicate emails are still allowed?
 
     user.save()
         .then((user) => {
@@ -40,7 +44,7 @@ userRouter.post('/users', (req, res) => {
                 });
             }).catch(() => {
                 return res.status(400).send("User created but default calendar creation failed.")
-            }); 
+            });
         }).catch((err) => {
             res.status(400).send("Account already exists for: " + body.email);
         });

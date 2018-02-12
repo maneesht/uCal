@@ -9,6 +9,7 @@ var { Group } = require('./../src/models/group');
 var { Evento } = require('./../src/models/event');
 const { users, populateUsers } = require('./seed/seed');
 require("supertest").agent(app.listen());
+
 beforeEach(populateUsers);
 
 describe('USER TESTS', () => {

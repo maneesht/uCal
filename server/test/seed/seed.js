@@ -20,6 +20,9 @@ const users = [{
 	password: 'UserPassOne',
 	groups: [
 		groupOneId
+	],
+	groupinvites: [
+		groupTwoId
 	]
 }, {
 	_id: userTwoId,

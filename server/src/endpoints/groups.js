@@ -11,15 +11,19 @@ groupRouter.patch('/user/:userId/groups/:groupID/accept', (req, res) => {
     //accept or decline a group invite
     var accept = _.pick(req.body, ['accept']).accept;
     if (accept) {
+
+		//TODO needs to be fixed
+
         Group.findOneAndUpdate({
             _id: req.params.groupID,
-            $elemMatch: {invited: user._id}
+            // $elemMatch: {invited: req.params.userId}
         }, {
-            $push: {members: user._id},
-            $pull: {invited: user._id}
+            $push: {members: req.params.userId}
+            // $pull: {invited: req.params.userId}
         }).then(() => {
             return res.status(200).send("User added to group");
-        }).catch(() => {
+        }).catch((err) => {
+			console.log(err);
             return res.status(400).send("Failed to add user to group");
         });
     } else {
@@ -40,10 +44,13 @@ groupRouter.patch('/groups/:groupID/invite', (req, res) => {
     //Invite users to the group
     var invites = _.pick(req.body, ['users']).users;
 
-    Group.findById(req.params.groupID, {$addToSet: {invited: {$each: invites}}}, {new: true}).then((group) => {
-        for (var x = 0; x < group.invited.length; x++) {
-            User.findByIdAndUpdate(group.invited[x], {$addToSet: {groupinvites: group._id}});
-        };
+    Group.findById(req.params.groupID,
+		{ $addToSet: { invited: {$each: invites} } },
+		{ new: true })
+		.then((group) => {
+	        for (var x = 0; x < group.invited.length; x++) {
+	            User.findByIdAndUpdate(group.invited[x], {$addToSet: {groupinvites: group._id}});
+	        };
     }).catch(() => {
         return res.status(400).send("Failed to invite users to group");
     })
@@ -59,6 +66,8 @@ groupRouter.post('/user/:userID/groups', (req, res) => {
         invited: groupinfo.invited || [],
         members: [req.params.userID]
     });
+
+	//TODO add the group to the creator's groups
 
     group.save().then((group) => {
         for (var x = 0; x < group.invited.length; x ++) {

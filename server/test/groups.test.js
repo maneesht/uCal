@@ -20,30 +20,73 @@ describe('GROUP TESTS', () => {
 //test accepting and declining a group invite
 describe('PATCH /user/:userId/groups/:groupID/accept', () => {
 
-	//TODO normally accept an invite to a group
+	//normally accept an invite to a group
 	it('should accept an invite', (done) => {
 
+		var accept = true;
+
 		request(app)
-			.post(`/users/${users[0]._id}/calendars`)
-			.send(calendar)
+			.patch(`/user/${users[0]._id}/groups/${groups[1]._id}/accept`)
+			.send({accept})
 			.expect(200)
 			.expect((res) => {
-				expect(res.body.name).toBe(name);
-				expect(res.body.description).toBe(description);
-				expect(res.body.owner).toBe(users[0]._id.toHexString());
-				expect(res.body.users[0]).toBe(users[0]._id.toHexString());
-				//also group is?
-				//also events is?
-				//check that the calendar was added to the user's list of calendars
+				console.log(res.body);
+				// expect(res.body).toExist;
+
 			})
 			.end(done);
 	});
 
-	//TODO normally declinde an invite to a group
+	//normally declinde an invite to a group
+	it('should decline an invite', (done) => {
 
-	//TODO try accepting for a group that doesn't exists
+		var accept = false;
 
-	//TODO try accepting for a user that doesn't exists
+		request(app)
+			.patch(`/user/${users[0]._id}/groups/${groups[1]._id}/accept`)
+			.send({accept})
+			.expect(200)
+			.expect((res) => {
+				console.log(res.body);
+				// expect(res.body).toExist;
+
+			})
+			.end(done);
+	});
+
+	//try accepting for a group that doesn't exists
+	it('should decline an invite', (done) => {
+
+		var accept = false;
+
+		request(app)
+			.patch(`/user/${users[0]._id}/groups/5784852/accept`)
+			.send({accept})
+			.expect(400)
+			.expect((res) => {
+				console.log(res.body);
+				// expect(res.body).toExist;
+
+			})
+			.end(done);
+	});
+
+	//try accepting for a user that doesn't exists
+	it('should decline an invite', (done) => {
+
+		var accept = false;
+
+		request(app)
+			.patch(`/user/2424112/groups/${groups[1]._id}/accept`)
+			.send({accept})
+			.expect(400)
+			.expect((res) => {
+				console.log(res.body);
+				// expect(res.body).toExist;
+
+			})
+			.end(done);
+	});
 
 	//TODO try accepting for a group that doesn't exists
 
@@ -87,7 +130,7 @@ describe('DELETE /users/:userID/groups/:groupID', () => {
 
 	//TODO try to remove a user that doesn't exist from a group
 
-	//TODO try to remove a user that is not a member of the group from the group 
+	//TODO try to remove a user that is not a member of the group from the group
 
 });
 
