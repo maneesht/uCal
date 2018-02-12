@@ -46,7 +46,7 @@ const events = [{
 	location: { name: "HAAS" },
 	description: "CS meeting",
 	calendar: calendarOneId,
-	invites: 0
+	invites: []
 }, {
 	_id: eventTwoId,
 	name: "Test Event 2",
@@ -57,7 +57,7 @@ const events = [{
 	location: { name: "Lawson" },
 	description: "CS meeting",
 	calendar: calendarOneId,
-	invites: 0
+	invites: []
 }];
 
 
@@ -83,8 +83,8 @@ const populateCalendars = (done) => {
 
 const populateEvents = (done) => {
 	Evento.remove({}).then(() => {
-		var eventOne = new Evento(eventss[0]).save();
-		var calendarTwo = new Evento(events[1]).save();
+		var eventOne = new Evento(events[0]).save();
+		var eventTwo = new Evento(events[1]).save();
 
 		return Promise.all([eventOne, eventTwo]);
 
@@ -92,4 +92,4 @@ const populateEvents = (done) => {
 };
 
 
-module.exports = { users, populateUsers, populateCalendars, populateEvents };
+module.exports = { users, calendars, populateUsers, populateCalendars, populateEvents };

@@ -3,5 +3,10 @@
 		"PORT": 3000,
 		"MONGODB_URI": "mongodb://localhost:27017/uCal",
 		"BASE_URL": "TODO heroku address"
+	},
+	"test": {
+		"PORT": 3000,
+		"MONGODB_URI": "mongodb://localhost:27017/uCalTest",
+		"BASE_URL": "TODO heroku address"
 	}
 }

@@ -11,6 +11,8 @@ const { users, populateUsers } = require('./seed/seed');
 require("supertest").agent(app.listen());
 beforeEach(populateUsers);
 
+describe('USER TESTS', () => {
+
 describe('POST /users/login', () => {
 	it('should return user', (done) => {
 		var email = users[0].email;
@@ -44,7 +46,7 @@ describe('POST /users/login', () => {
 });
 
 describe('POST /users', () => {
-	
+
 	it('should return user', (done) => {
 		var email = "newemail@example.com";
 		var password = 'password';
@@ -165,7 +167,7 @@ describe('GET /users/:userID', () => {
 						expect(res.body).toContainKeys(['email', 'userId', 'groups', 'calendars', 'friends']);
 						expect(res.body.email).toEqual(users[0].email);
 						expect(res.body.userId).toEqual(id);
-						expect(res.body.groups).toBeAn(Array);	
+						expect(res.body.groups).toBeAn(Array);
 						expect(res.body.calendars).toBeAn(Array);
 						expect(res.body.friends).toBeAn(Array);
 					})
@@ -183,4 +185,4 @@ describe('GET /users/:userID', () => {
 			.end(done);
 	});
 });
-
+});
