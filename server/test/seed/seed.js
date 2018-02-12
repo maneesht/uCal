@@ -11,15 +11,23 @@ const calendarOneId = new ObjectID();
 const calendarTwoId = new ObjectID();
 const eventOneId = new ObjectID();
 const eventTwoId = new ObjectID();
+const groupOneId = new ObjectID();
+const groupTwoId = new ObjectID();
 
 const users = [{
 	_id: userOneId,
 	email: 'eli@example.com',
-	password: 'UserPassOne'
+	password: 'UserPassOne',
+	groups: [
+		groupOneId
+	]
 }, {
 	_id: userTwoId,
 	email: 'steve@example.com',
-	password: 'UserPassTwo'
+	password: 'UserPassTwo',
+	groups: [
+		groupTwoId
+	]
 }];
 
 const calendars = [{
@@ -60,6 +68,17 @@ const events = [{
 	invites: []
 }];
 
+const groups = [{
+	_id: groupOneId,
+	name: "Test Group 1",
+	creator: userOneId,
+	members: [userOneId]
+}, {
+	_id: groupTwoId,
+	name: "Test Group 2",
+	creator: userTwoId,
+	members: [userTwoId]
+}];
 
 const populateUsers = (done) => {
 	User.remove({}).then(() => {
@@ -91,5 +110,14 @@ const populateEvents = (done) => {
 	}).then(() => done());
 };
 
+const populateGroups = (done) => {
+	Evento.remove({}).then(() => {
+		var groupOne = new Evento(groups[0]).save();
+		var groupTwo = new Evento(groups[1]).save();
 
-module.exports = { users, calendars, populateUsers, populateCalendars, populateEvents };
+		return Promise.all([groupOne, groupTwo]);
+
+	}).then(() => done());
+};
+
+module.exports = { users, calendars, events, groups, populateUsers, populateCalendars, populateEvents, populateGroups };

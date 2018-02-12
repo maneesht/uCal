@@ -51,15 +51,15 @@ groupRouter.patch('/groups/:groupID/invite', (req, res) => {
 
 
 groupRouter.post('/user/:userID/groups', (req, res) => {
-    //Create a new Group 
+    //Create a new Group
     var groupinfo = _.pick(req.body, ['group']).group;
     var group = new Group({
         name: groupinfo.name,
         creator: req.params.userID,
-        invited: ((invited in groupinfo) ? groupinfo.invited : []),
+        invited: groupinfo.invited || [],
         members: [req.params.userID]
     });
-    
+
     group.save().then((group) => {
         for (var x = 0; x < group.invited.length; x ++) {
             User.findByIdAndUpdate(group.invited[x], {$push: {groupinvites: group._id}});
@@ -89,10 +89,6 @@ groupRouter.delete('/users/:userID/groups/:groupID', (req, res) => {
     }).catch(() => {
         return res.status(404).send("Group not Found");
     });
-});
-
-groupRouter.delete('/groups/:groupId', (req, res) => {
-
 });
 
 groupRouter.get('/groups/:groupId', (req, res) => {
@@ -151,4 +147,8 @@ groupRouter.get('/groups/:groupId', (req, res) => {
         return res.status(400).send("Group not Found");
     })
 });
+
+//TODO delete a group
+
+
 module.exports = groupRouter;
