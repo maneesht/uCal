@@ -44,14 +44,26 @@ groupRouter.patch('/groups/:groupID/invite', (req, res) => {
     //Invite users to the group
     var invites = _.pick(req.body, ['users']).users;
 
-    Group.findById(req.params.groupID,
-		{ $addToSet: { invited: {$each: invites} } },
+	//TODO make a check to see if the user already has the group in their groups, not just their invited list
+
+    Group.findByIdAndUpdate(
+		req.params.groupID,
+		{ $addToSet: { invited: { $each: invites } } },
 		{ new: true })
 		.then((group) => {
-	        for (var x = 0; x < group.invited.length; x++) {
-	            User.findByIdAndUpdate(group.invited[x], {$addToSet: {groupinvites: group._id}});
+	        for (i = 0; i < invites.length; i++) {
+	            User.findByIdAndUpdate(
+					invites[i],
+					{ $addToSet: { groupinvites: req.params.groupID } })
+					.then((user) => {
+						console.log(`group added to ${user.email}\'s invites`);
+					}).catch((err) => {
+						return res.status(400).send(`Failed to add the group to ${invites[i]}\'s groups`  + err)
+					});
 	        };
-    }).catch(() => {
+			res.status(200).send(group);
+    }).catch((err) => {
+		console.log(err);
         return res.status(400).send("Failed to invite users to group");
     })
 });
