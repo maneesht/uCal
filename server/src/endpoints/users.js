@@ -20,9 +20,9 @@ userRouter.post('/users/create', (req, res) => {
     if (!re.test(body['email']))
         return res.status(400).send("email not a correct email format");
 
-	console.log(body);
+	//console.log(body);
 	var user = new User(body);
-	console.log(user);
+	//console.log(user);
 
 	//TODO duplicate emails are still allowed?
 

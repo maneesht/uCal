@@ -46,14 +46,14 @@ describe('POST /users/login', () => {
 	});
 });
 
-describe('POST /users', () => {
+describe('POST /users/create', () => {
 
 	it('should return user', (done) => {
 		var email = "newemail@example.com";
 		var password = 'password';
 
 		request(app)
-			.post('/users')
+			.post('/users/create')
 			.send({
 				email: email,
 				password: password
@@ -69,7 +69,7 @@ describe('POST /users', () => {
 
 	it('should return 400 because the user already exists', (done) => {
 		request(app)
-			.post('/users')
+			.post('/users/create')
 			.send({
 				email: users[0].email,
 				password: users[0].password
@@ -84,7 +84,7 @@ describe('POST /users', () => {
 
 	it('should return 400 because the email is improperly formatted', (done) => {
 		request(app)
-			.post('/users')
+			.post('/users/create')
 			.send({
 				email: "email",
 				password: "password"
@@ -99,7 +99,7 @@ describe('POST /users', () => {
 
 	it('should return 400 because the request does not contain all information necessary', (done) => {
 		request(app)
-			.post('/users')
+			.post('/users/create')
 			.send({
 				email: "email@example.com"
 			})

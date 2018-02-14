@@ -30,9 +30,7 @@ describe('PATCH /user/:userId/groups/:groupID/accept', () => {
 			.send({accept})
 			.expect(200)
 			.expect((res) => {
-				console.log(res.body);
-				// expect(res.body).toExist;
-
+				expect(res.text).toBe("User added to group");
 			})
 			.end(done);
 	});
@@ -47,50 +45,40 @@ describe('PATCH /user/:userId/groups/:groupID/accept', () => {
 			.send({accept})
 			.expect(200)
 			.expect((res) => {
-				console.log(res.body);
-				// expect(res.body).toExist;
-
+				expect(res.text).toBe("User succesfully declined invitation to group");
 			})
 			.end(done);
 	});
 
 	//try accepting for a group that doesn't exists
-	it('should decline an invite', (done) => {
+	it('should return 400 because the group doesn\'t exist', (done) => {
 
-		var accept = false;
+		var accept = true;
 
 		request(app)
 			.patch(`/user/${users[0]._id}/groups/5784852/accept`)
 			.send({accept})
 			.expect(400)
-			.expect((res) => {
-				console.log(res.body);
-				// expect(res.body).toExist;
-
-			})
 			.end(done);
 	});
 
 	//try accepting for a user that doesn't exists
-	it('should decline an invite', (done) => {
+	it('should return 400 because the user doesn\'t exist', (done) => {
 
-		var accept = false;
+		var accept = true;
 
 		request(app)
 			.patch(`/user/2424112/groups/${groups[1]._id}/accept`)
 			.send({accept})
 			.expect(400)
-			.expect((res) => {
-				console.log(res.body);
-				// expect(res.body).toExist;
-
-			})
 			.end(done);
 	});
 
 	//TODO try accepting for a group that doesn't exists
 
 	//TODO try doing something other than accepting/declining
+
+	//TODO try sending something other than true or false
 
 });
 

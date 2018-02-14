@@ -10,34 +10,51 @@ let groupRouter = express.Router();
 groupRouter.patch('/user/:userId/groups/:groupID/accept', (req, res) => {
     //accept or decline a group invite
     var accept = _.pick(req.body, ['accept']).accept;
-    if (accept) {
 
-		//TODO needs to be fixed
-
-        Group.findOneAndUpdate({
-            _id: req.params.groupID,
-            // $elemMatch: {invited: req.params.userId}
-        }, {
-            $push: {members: req.params.userId}
-            // $pull: {invited: req.params.userId}
-        }).then(() => {
-            return res.status(200).send("User added to group");
+    if (accept == true) { //== true is needed because accept will be a string and always evaluate to true but == converts types
+		//update group
+        Group.findOneAndUpdate(
+			{ _id: req.params.groupID },
+			{ $addToSet: { members: req.params.userId },
+              $pull: { invited: req.params.userId } }
+		  ).then(() => {
+			//update user
+			User.findOneAndUpdate({
+	            _id: req.params.userId
+	        }, {
+				$addToSet: { groups: req.params.groupID },
+	            $pull: { groupinvites: req.params.groupID }
+	        }).then(() => {
+				return res.status(200).send("User added to group");
+			}).catch((err) => {
+	            return res.status(400).send("Failed to update the user");
+	        });
         }).catch((err) => {
-			console.log(err);
-            return res.status(400).send("Failed to add user to group");
+            return res.status(400).send("Failed to update the group");
         });
-    } else {
-        Group.findOneAndUpdate({
-            _id: req.params.groupID,
-            $elemMatch: {invited: user._id}
-        }, {
-            $pull: {invited: user._id}
-        }).then(() => {
-            return res.status(200).send("User declined invitation to group");
+    }
+	else if (accept == false) {
+        Group.findOneAndUpdate(
+			{ _id: req.params.groupID },
+			{ $pull: { invited: req.params.userId } }
+		).then(() => {
+			//update user
+			User.findOneAndUpdate({
+				_id: req.params.userId
+			}, {
+				$pull: { groupinvites: req.params.groupID }
+			}).then(() => {
+				return res.status(200).send("User succesfully declined invitation to group");
+			}).catch((err) => {
+				return res.status(400).send("Failed to update the user");
+			});
         }).catch(() => {
-            return res.status(400).send("Failed to decline invitation to group");
+            return res.status(400).send("Failed to update the group");
         });
-    };
+    }
+	else {
+		res.status(400).send("please send true or false for accept value");
+	}
 });
 
 groupRouter.patch('/groups/:groupID/invite', (req, res) => {
