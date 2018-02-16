@@ -1,26 +1,16 @@
 //set up env variables
 require('./src/config/config');
-let express = require('express');
-let bodyParser = require('body-parser');
-let cors = require('cors');
-const _ = require('lodash');
 
 //include objects
 const { mongoose, mongoUrl } = require('./src/database/mongoose');
-const { ObjectID } = require('mongodb');
-const { User } = require('./src/models/user');
-const { Evento } = require('./src/models/event');
-const { Calendar } = require('./src/models/calendar');
-const { Group } = require('./src/models/group');
-
-
 
 //set up server
-let app = express();
-let cors = require('cors');
-const _ = require('lodash');
 let passport = require('passport');
 const port = process.env.PORT || 3000;
+let express = require('express');
+let cors = require('cors');
+const _ = require('lodash');
+
 let GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 let LocalStrategy = require('passport-local');
 let bodyParser = require('body-parser');
@@ -28,15 +18,10 @@ let cookieParser = require('cookie-parser');
 let session = require('express-session');
 let jwt = require('jsonwebtoken');
 let secretKey = require('./src/config/config').key;
-
-//include objects
-const { mongoose, mongoUrl } = require('./src/database/mongoose');
-const User = require('./src/models/user').User;
+const app = express();
 
 //routes
-const { userRoutes } = require('./src/endpoints/users');
-const { groupRoutes } = require('./src/endpoints/groups');
-
+app.use(cors());
 app.use(cookieParser());
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -44,6 +29,14 @@ app.use(bodyParser.json());
 app.use(session({ resave: true, saveUninitialized: true, secret: 'asdflasdfasdf' })); //change to environment letiable for dev/prod
 app.use(passport.initialize());
 app.use(passport.session());
+
+let userRouter = require('./src/endpoints/users');
+let eventRouter = require('./src/endpoints/event');
+let friendsRouter = require('./src/endpoints/friends');
+let calendarRouter = require('./src/endpoints/calendars');
+let groupRouter = require('./src/endpoints/groups');
+
+const { User } = require('./src/models/user');
 
 //authentication check for username and password
 passport.use(new LocalStrategy(
@@ -53,7 +46,6 @@ passport.use(new LocalStrategy(
     },
     (email, password, done) => {
         // insert validation code here from mongo
-        //for more help, take a look at https://scotch.io/tutorials/easy-node-authentication-setup-and-local
         User.findByCredentials(email, password)
         .then((user) => {
             return done(null, user);
@@ -87,25 +79,6 @@ passport.deserializeUser((id, done) => {
     });
 });
 
-app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-app.get('/auth/google/callback', passport.authenticate('google', {
-    failureRedirect: '/'
-}), (req, res) => {
-    let token = jwt.sign(req.user, secretKey, {
-        expiresIn: '24h'
-    });
-    res.redirect(`/login-success?token=${token}`);
-});
-app.get('/logout', (req, res) => {
-    req.logout();
-    res.redirect('/login');
-});
-app.use('/groups', groupRoutes);
-app.use('/users', userRoutes);
-app.use('/', express.static('../uCalAngular/dist'));
-app.get('/*', (req, res) => {
-    res.sendFile('index.html', { root: '../uCalAngular/dist' });
-});
 app.post('/login', (req, res, next) => {
     passport.authenticate('local', function (err, user, info) {
         if (err) { return next(err); }
@@ -119,63 +92,28 @@ app.post('/login', (req, res, next) => {
         });
     })(req, res, next);
 });
-app.listen(port, () => console.log(`Listening on port ${port}`));
-let userRouter = require('./src/endpoints/users');
-let eventRouter = require('./src/endpoints/event');
-let friendsRouter = require('./src/endpoints/friends');
-let calendarRouter = require('./src/endpoints/calendars');
-let groupRouter = require('./src/endpoints/groups');
-const port = process.env.PORT || 3000;
-app.use(cors());
-app.use(bodyParser.urlencoded({
-	extended:true
-}));
-app.use(bodyParser.json());
-
+app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+app.get('/auth/google/callback', passport.authenticate('google', {
+    failureRedirect: '/'
+}), (req, res) => {
+    let token = jwt.sign(req.user, secretKey, {
+        expiresIn: '24h'
+    });
+    res.redirect(`/login-success?token=${token}`);
+});
+app.get('/logout', (req, res) => {
+    req.logout();
+    res.redirect('/login');
+});
 app.use('/', express.static('../uCalAngular/dist'));
+app.get('/*', (req, res) => {
+    res.sendFile('index.html', { root: '../uCalAngular/dist' });
+});
 app.use('/', userRouter);
 app.use('/', friendsRouter);
 app.use('/', groupRouter);
 app.use('/', eventRouter);
 app.use('/', calendarRouter);
-
-//include endpoint functions
-
-//paths
-app.get('/*', (req, res) => {
-    res.sendFile('index.html', {root: '../uCalAngular/dist'});
-})
-
-//route for logging in
-app.post('/users/login', (req, res) => {
-	var body = _.pick(req.body, ['email', 'password']);
-
-	User.findByCredentials(body.email, body.password)
-		.then((user) => {
-			res.status(200).send(user);
-		}).catch((err) => {
-			res.status(400).send(err);
-		});
-});
-
-//route for finding a user by it's email
-app.post('/users/find', (req, res) => {
-	var body = _.pick(req.body, ['email']);
-
-	User.findByEmail(body.email)
-		.then((user) => {
-			res.status(200).send(user);
-		}).catch((err) => {
-			res.status(400).send(err);
-		});
-});
-
-
-
-
-
-
-//listen
 app.listen(port, () => console.log(`Listening on port ${port}`));
 
 module.exports = app;

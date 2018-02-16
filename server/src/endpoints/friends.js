@@ -9,7 +9,7 @@ let express = require('express');
 let friendRouter = express.Router();
 friendRouter.post('/users/:userID/friends/:friendID', (req, res) => {
     //Create a friend request from userID to friendID
-    User.findByIdAndUpdate(req.params.friendID, {$addToSet: {friendRequests: req.params.userID}}).then((users) => {
+    User.findByIdAndUpdate(req.params.friendID, { $addToSet: { friendRequests: req.params.userID } }).then((users) => {
         return res.status(200).send("Friend request sent");
     }).catch(() => {
         console.error(err);
@@ -19,8 +19,8 @@ friendRouter.post('/users/:userID/friends/:friendID', (req, res) => {
 
 friendRouter.delete('/users/:userID/friends/:friendID', (req, res) => {
     //Remove the friendship between userId and friendID
-    User.findByIdAndUpdate(req.params.userID, {$pull: {friends: req.params.friendID}}, {new: true}).then((user) => {
-        User.findByIdAndUpdate(req.params.friendID, {$pull: {friends: user._id}}).then((friend) => {
+    User.findByIdAndUpdate(req.params.userID, { $pull: { friends: req.params.friendID } }, { new: true }).then((user) => {
+        User.findByIdAndUpdate(req.params.friendID, { $pull: { friends: user._id } }).then((friend) => {
             return res.status(200).send("Removed Friend");
         }).catch((err) => {
             console.error(err);
@@ -37,8 +37,8 @@ friendRouter.patch('/users/:userID/friends/:friendID', (req, res) => {
     //userID is accepting or declining friendID has sent the request
     var accept = _.pick(req.body, ['accept']).accept;
     if (accept) {
-        User.findByIdAndUpdate(req.params.userID, {$push: {friends: req.params.friendID}, $pull: {friendRequests: req.params.friendID}}, {new: true}).then((user) => {
-            User.findByIdAndUpdate(req.params.userID, {$push: {friends: user._id}}).then((friend) => {
+        User.findByIdAndUpdate(req.params.userID, { $push: { friends: req.params.friendID }, $pull: { friendRequests: req.params.friendID } }, { new: true }).then((user) => {
+            User.findByIdAndUpdate(req.params.userID, { $push: { friends: user._id } }).then((friend) => {
                 return res.status(200).send("Friend Request Accepted!");
             }).catch((err) => {
                 console.error(err);
@@ -47,7 +47,7 @@ friendRouter.patch('/users/:userID/friends/:friendID', (req, res) => {
             console.error(err);
         })
     } else {
-        User.findByIdAndUpdate(req.params.userID, {$pull: {friendRequests: req.params.friendID}}).then((user) => {
+        User.findByIdAndUpdate(req.params.userID, { $pull: { friendRequests: req.params.friendID } }).then((user) => {
             return res.status(200).send("Successfully declined friends request");
         }).catch((err) => {
             console.error(err);

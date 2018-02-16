@@ -29,22 +29,22 @@ eventRouter.post('/events/create', (req, res) => {
     });
     */
 
-     var calendar = Calendar.Calendar.findOne({_id: eventData.calendar});
-     calendar.events.push(event);
-     calendar.save().then((calendar) => {
+    var calendar = Calendar.Calendar.findOne({ _id: eventData.calendar });
+    calendar.events.push(event);
+    calendar.save().then((calendar) => {
 
-     Calendar.findByIdAndUpdate(calendar.owner,  
-        {$push: {events: event}},
-        {new:true}).then((user) => {
-            return res.status(200).send(event);   
-        }).catch(() => {
-            return res.status(400).send("Failed to save event to calendar");
-        });
+        Calendar.findByIdAndUpdate(calendar.owner,
+            { $push: { events: event } },
+            { new: true }).then((user) => {
+                return res.status(200).send(event);
+            }).catch(() => {
+                return res.status(400).send("Failed to save event to calendar");
+            });
 
-     }).catch(() => {
+    }).catch(() => {
         return res.status(400).send("Failed to save event");
     });
-    
+
 });
 
 //Update Event
@@ -71,7 +71,7 @@ eventRouter.get('/events/get', (req, res) => {
             description: event.description,
             creator: event.creator._id,
             calendar: event.calendar
-        };      
+        };
         return res.status(200).send(data)
     }).catch(() => {
         return res.status(404).send("Event not Found");
@@ -83,7 +83,7 @@ eventRouter.delete('/events/:eventID', (req, res) => {
     var event = UEvent.findById(req.params.eventID);
     UEvent.findByIdAndRemove(req.params.eventID).then((event) => {
         //remove from calendar
-        Calendar.findByIdAndUpdate(event.calendar._id, {$pull: {events: event._id}}).then((calendar) => {
+        Calendar.findByIdAndUpdate(event.calendar._id, { $pull: { events: event._id } }).then((calendar) => {
             return res.status(200).send("event removed from calendar");
         });
     }).catch((err) => {

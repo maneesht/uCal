@@ -10,7 +10,7 @@ mongoose.connect(mongoUrl, {
 
 var server = mongoose.connection;
 server.on('error', console.error.bind(console, 'mongo connection error:'));
-server.once('open', function() {
+server.once('open', function () {
   console.log(`Mongo started on port: ${mongoUrl}`);
 });
 

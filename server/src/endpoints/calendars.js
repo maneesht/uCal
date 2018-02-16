@@ -19,7 +19,7 @@ calendarRouter.post('/users/:userID/calendars', (req, res) => {
     });
 
     calendar.save().then((calendar) => {
-        User.findByIdAndUpdate(calendar.owner, {$push: {calendars: calendar._id}}).then((user) => {
+        User.findByIdAndUpdate(calendar.owner, { $push: { calendars: calendar._id } }).then((user) => {
             return res.status(200).send(calendar);
         }).catch(() => {
             return res.status(400).send("Failed to save calendar to user");
@@ -43,7 +43,7 @@ calendarRouter.post('/groups/:groupID/calendars', (req, res) => {
         Calendar.save().then((calendar) => {
             var promises = [];
             for (var x = 0; x < calendar.users; x++) {
-                promises.push(User.findByIdAndUpdate(calendar.users[x], {$push: {calendars: {calendarId: calendar._id, edit: true}}}).then(() => {
+                promises.push(User.findByIdAndUpdate(calendar.users[x], { $push: { calendars: { calendarId: calendar._id, edit: true } } }).then(() => {
                     //pass
                 }).catch((err) => {
                     console.error(err);
@@ -59,7 +59,7 @@ calendarRouter.post('/groups/:groupID/calendars', (req, res) => {
     }).catch((err) => {
         console.error(err);
         return res.status(404).send("Group not Found");
-    }); 
+    });
 });
 
 calendarRouter.delete('/calendars/:calendarID', (req, res) => {
@@ -86,12 +86,12 @@ calendarRouter.get('/calendars/:calendarID', (req, res) => {
         };
         var promises = [];
         for (var x = 0; x < calendar.events.length; x++) {
-            promises.push(Evento.findById(calendar.events[x]).then((event)=>{
+            promises.push(Evento.findById(calendar.events[x]).then((event) => {
                 data.events.push(event);
             }).catch((err) => {
                 console.error(err);
             }))
-        };  
+        };
         q.all(promises).then(() => {
             return res.status(200).send(data)
         });
@@ -121,10 +121,10 @@ calendarRouter.patch('/calendars/:calendarID/share', (req, res) => {
     //Share the calendar to other users
     var user = _.pick(req.body, ['users']).users;
     var editable = _.pick(req.body, ['edit']).edit;
-    Calendar.findByIdAndUpdate(req.params.calendarID, {$addToSet: {users: {$each: user}}}, {new: true}).then((calendar) => {
+    Calendar.findByIdAndUpdate(req.params.calendarID, { $addToSet: { users: { $each: user } } }, { new: true }).then((calendar) => {
         var promises = []
         for (var x = 0; x < user.length; x++) {
-            promises.push(User.findByIdAndUpdate(user[x], {$addToSet: {calendars: {calendarId: calendar._id, edit: editable}}}).then((user) => {
+            promises.push(User.findByIdAndUpdate(user[x], { $addToSet: { calendars: { calendarId: calendar._id, edit: editable } } }).then((user) => {
                 //pass
             }).catch((err) => {
                 console.error(err);
