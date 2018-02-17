@@ -1,0 +1,10 @@
+div.center {
+    width: 20%;
+    display: block;
+    border-radius: 10px;
+    background-color: #eee;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 40px;
+    padding-right: 40px;
+}

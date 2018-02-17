@@ -5,17 +5,19 @@ var UEvent = require('../models/event').UEvent;
 const _ = require('lodash');
 const express = require('express');
 const q = require('q');
+const verifyToken = require('../token-handler').verifyToken;
 
 const calendarRouter = express.Router();
-calendarRouter.post('/users/:userID/calendars', (req, res) => {
+calendarRouter.post('/users/calendars', (req, res) => {
     //Create a calendar for a user
     var calendarData = _.pick(req.body, ['calendar']).calendar;
-
+    let id = req.user.id;
+    console.log(id);
     var calendar = new Calendar({
         name: calendarData.name,
         description: calendarData.description || "",
-        owner: req.params.userID,
-        users: [req.params.userID]
+        owner: id,
+        users: [id]
     });
 
     calendar.save().then((calendar) => {
@@ -100,7 +102,7 @@ calendarRouter.get('/calendars/:calendarID', (req, res) => {
             }))
         };
         q.all(promises).then(() => {
-            return res.status(200).send(data)
+            return res.status(200).send(data);
         });
     }).catch(() => {
         return res.status(404).send("Calendar not Found");
@@ -145,6 +147,22 @@ calendarRouter.patch('/calendars/:calendarID/share', (req, res) => {
     }).catch((err) => {
         // console.error(err);
         return res.status(400).send("Failed to share calendar")
+    });
+});
+
+calendarRouter.get('/calendars/', verifyToken, (req, res) => {
+    console.log(req.decoded);
+    var currentUser = req.user;
+    var calendars = [];
+    console.log(currentUser);
+    User.findById(currentUser._id).then((user) => {
+        console.log(user);
+        for (var x = 0; x < user.calendars.length; x++) {
+            calendars.concat(user.calendars[x]);
+        }
+        return res.status(200).send(calendars);
+    }).catch(() => {
+        return res.status(404).send("User not Found");
     });
 });
 

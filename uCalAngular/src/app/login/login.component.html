@@ -1,6 +1,16 @@
-<form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-    <input name="username" formControlName="email">
-    <input name="password" type="password" formControlName="password">
-    <button type="submit" [disabled]="loginForm.invalid || loginForm.pristine" class="btn btn-success">Save</button>
-</form>
-<a class="btn btn-primary" href="/auth/google">Google Login</a>
+<div class="center">
+    <form [formGroup]="loginForm" >
+        <div class="form-group">
+            <label for="username">Email</label>
+            <input name="username" formControlName="email" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input name="password" type="password" formControlName="password" class="form-control">
+        </div>
+        <div *ngIf="err" class="alert alert-danger">{{err}}</div>
+        <button [disabled]="err && loginForm.pristine" class="btn btn-success" (click)="onSubmit()">Login</button>
+        <button (click)="register()" [disabled]="err && loginForm.pristine" class="btn btn-secondary">Register</button>
+    </form>
+    <a class="btn btn-primary" href="/auth/google">Google Login</a>
+</div>

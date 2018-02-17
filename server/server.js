@@ -125,14 +125,11 @@ app.use('/', calendarRouter);
 
 //include endpoint functions
 
-app.use('/', userRouter);
-app.use('/', friendsRouter);
-app.use('/', groupRouter);
-app.use('/', eventRouter);
-app.use('/', calendarRouter);
 app.get('/*', (req, res) => {
     res.sendFile('index.html', { root: '../uCalAngular/dist' });
 });
-app.listen(port, () => console.log(`Listening on port ${port}`));
+if(!module.parent) {
+    app.listen(port, () => console.log(`Listening on port ${port}`));
+}
 
 module.exports = app;

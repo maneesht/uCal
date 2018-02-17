@@ -12,14 +12,14 @@ describe('NavBarComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ NavBarComponent ],
+      declarations: [NavBarComponent],
       imports: [
         NgbModule.forRoot()
       ],
-      providers: [ TokenHandlerService ],
+      providers: [TokenHandlerService],
 
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

@@ -72,13 +72,14 @@
               End Time and Day: <br>
               <input type="date" [(ngModel)]="defaultEndDate" name="end"><br>
               <input type="time" [(ngModel)]="endTime" name="usr_time">
+              <div *ngIf="addEventError" style="color: red">{{addEventError}}</div>
               <br><button type="button" class="btn btn-outline-dark" (click)="addEvent()">Add Event</button><br>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-outline-dark" (click)="c('Close click')">Close</button>
             </div>
           </ng-template>
-          <button class="btn btn-lg btn-outline-primary" (click)="open(content)" (click)="addDates(day.date)">Create Event</button>
+          <button class="btn btn-sm btn-outline-primary" (click)="open(content)" (click)="addDates(day.date)">Create Event</button>
           <hr>
           <pre>{{closeResult}}</pre>
         <!-- <small style="margin: 5px">There are {{ day.events.length }} events on this day</small> -->

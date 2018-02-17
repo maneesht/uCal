@@ -13,8 +13,11 @@ import { CalendarEvent, CalendarEventTitleFormatter } from 'angular-calendar';
 import { CustomEventTitleFormatter } from './custom-event-title-formatter.provider';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { Subject } from 'rxjs/Subject';
+import { HttpClient, HttpParams } from '@angular/common/http';
 
-
+import { switchMap, concatMap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { mergeMap } from 'rxjs/operator/mergeMap';
 
 
 @Component({
@@ -37,21 +40,16 @@ export class CalendarComponent implements OnInit {
   end: string;
   defaultStartDate: string;
   defaultEndDate: string;
+  addEventError: string;
   eventStartDate: Date;
   eventEndDate: Date;
   startTime: string;
   endTime: string;
 
-  events: CalendarEvent[] = [
-    {
-      start: new Date(2018, 1, 14, 13, 30),
-      end: new Date(2018, 1, 15, 9, 30),
-      title: 'Lunch with Manu',
-      color: { primary: "blue", secondary: "lightblue" }
-    }];
+  events: CalendarEvent[] = [];
 
   refresh: Subject<any> = new Subject();
-  constructor(private modalService: NgbModal) { }
+  constructor(private modalService: NgbModal, private http: HttpClient) { }
   closeResult: string;
 
   open(content) {
@@ -93,10 +91,7 @@ export class CalendarComponent implements OnInit {
   }
 
   addEvent() {
-    console.log("Start time: " + this.startTime);
-    console.log("End time: " + this.endTime);
     let startHours = this.startTime.split(":");
-    console.log(startHours);
     let endHours = this.endTime.split(":");
     this.start = this.defaultStartDate;
     this.end = this.defaultEndDate;
@@ -108,11 +103,49 @@ export class CalendarComponent implements OnInit {
     this.eventEndDate.setDate(this.eventEndDate.getDate() + 1);
     let test = new Date(this.start);
     this.events.push({ start: this.eventStartDate, end: this.eventEndDate, title: this.eventName, color: { primary: "blue", secondary: "lightblue" } });
+    let params = new HttpParams();
+    this.addEventError = '';
+    if(this.eventEndDate.getTime() < this.eventStartDate.getTime()) {
+      this.addEventError = 'Start Date needs to be after End Date';
+      return false;
+    }
+    params = params
+      .set('name', this.eventName)
+      .set('date', JSON.stringify({day: this.eventStartDate.getDate(), month: this.eventStartDate.getMonth(), year: this.eventStartDate.getFullYear()}))
+      .set('allDay', 'false')
+      .set('startTime', JSON.stringify({hour: this.eventStartDate.getHours(), minute: this.eventStartDate.getMinutes(), year: this.eventStartDate.getFullYear(), month: this.eventStartDate.getMonth(), day: this.eventStartDate.getDate()}))
+      .set('endTime', JSON.stringify({hour: this.eventEndDate.getHours(), minute: this.eventEndDate.getMinutes(), year: this.eventEndDate.getFullYear(), month: this.eventEndDate.getMonth(), day: this.eventEndDate.getDate()}))
+      .set('location', JSON.stringify({location: 'Lawson'}))
+      .set('description', 'I hate the backend team')
+      .set('calendar', "5a88d0aa130a9d0de8fb2255");
+    this.http.post(`/events/create`, params).subscribe(data => console.log(data));
     this.refresh.next();
-    console.log(this.events);
   }
+  createHTTP(id) {
+    return this.http.get(`/calendars/${id}`);
+  }
+  
 
   ngOnInit() {
+    this.http.get('/users/calendars/get').mergeMap((calendar: any[]) => {
+      let observable$ = calendar.map(calendar => this.createHTTP(calendar._id));
+      return Observable.forkJoin(observable$);
+    }).subscribe(data => {
+      let defaultCalendar = data[0];
+      let events: any[] = defaultCalendar['events'];
+      let modifiedEvents = events.map(event => {
+        console.log(event);
+        return {
+          ...event,
+          start: new Date(event.startTime.year, event.startTime.month, event.startTime.day, event.startTime.hour, event.startTime.minute),
+          title: event.name,
+          color: { primary: "blue", secondary: "lightblue" },
+          end: new Date(event.endTime.year, event.endTime.month, event.endTime.day, event.endTime.hour, event.endTime.minute)
+        }
+      });
+      this.events = modifiedEvents;
+      console.log(this.events);
+    });
     //this.http.get('/api/get-events').subscribe(resp => console.log(resp));
   }
   viewDate: Date = new Date();

@@ -3,36 +3,91 @@ var Group = require('../models/group');
 
 var Calendar = require('../models/calendar').Calendar;
 var UEvent = require('../models/event').UEvent;
+let LocalStrategy = require('passport-local');
+let passport = require('passport');
 let express = require('express');
+let jwt = require('jsonwebtoken');
+let secretKey = require('../config/config').key;
 const _ = require('lodash');
+const verifyToken = require('../token-handler').verifyToken;
 var q = require('q');
 
 let userRouter = express.Router();
-
-//route for creating a new user
-userRouter.post('/users/create', (req, res) => {
-    var body = _.pick(req.body, ['email', 'password']);
-
-    if (body['email'] == undefined || body['password'] == undefined)
-        return res.status(400).send("Required Fields Unspecified");
-
-    //Regular Expression for finding email addresses
-    var re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
-    if (!re.test(body['email']))
-        return res.status(400).send("email not a correct email format");
-
-	var user = new User(body);
-
-    user.save()
-        .then(() => {
-            return res.status(200).send({email: body.email});
-        }).catch((err) => {
-            return res.status(400).send("Account already exists for: " + body['email']);
+userRouter.post('/signup', (req, res, next) => {
+    passport.authenticate('local-signup', function (err, user, info) {
+        if (err) { return next(err); }
+        if (!user) { return res.status(500).send(info); }
+        req.logIn(user, function (err) {
+            if (err) { return next(err); }
+            let token = jwt.sign({ userId: user }, secretKey, {
+                expiresIn: '2 days'
+            });
+            return res.send({ message: "Success!", token: token });
         });
+    })(req, res, next);
 });
 
+//route for creating a new user
+passport.use('local-signup', new LocalStrategy({
+    // by default, local strategy uses username and password, we will override with email
+    usernameField: 'email',
+    passwordField: 'password',
+    passReqToCallback: true // allows us to pass back the entire request to the callback
+},
+    function (req, email, password, done) {
+        if (!email || !password)
+            return done("Required Fields Unspecified");
+
+        // asynchronous
+        // User.findOne wont fire unless data is sent back
+        process.nextTick(function () {
+
+            // find a user whose email is the same as the forms email
+            // we are checking to see if the user trying to login already exists
+            User.findOne({ 'local.email': email }, function (err, user) {
+                // if there are any errors, return the error
+                if (err)
+                    return done(err);
+                //Regular Expression for finding email addresses
+                var re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+                if (!re.test(email))
+                    return done("email not a correct email format");
+                if(user) {
+                    return done(null, false, req.flash('signupMessage', 'Email already taken'));
+                }
+
+                var newUser = new User({email, password});
+
+                newUser.save()
+                    .then((user) => {
+                        //Create a new default calendar for the user as well
+                        var calendar = new Calendar({
+                            name: "Events",
+                            owner: user._id,
+                            users: [
+                                user._id
+                            ]
+                        });
+                        calendar.save().then((calendar) => {
+                            User.findByIdAndUpdate(user._id, { $push: { calendars: { _id: calendar._id, edit: true } } }, { new: true }).then((user) => {
+                                done(null, user);
+                            }).catch((err) => {
+                                done("Failed to save default calendar to user");
+                            });
+                        }).catch(() => {
+                            done("User created but default calendar creation failed.");
+                        });
+                    }).catch((err) => {
+                        done("Account already exists for: " + email);
+                    });
+            });
+        });
+    }));
+
+
+
 //route for validating a user's credentials
-userRouter.post('/users/validate', (req, res) => {
+/*userRouter.post('/users/validate', (req, res) => {
     var body = _.pick(req.body, ['email', 'password']);
 
     User.findByCredentials(body.email, body.password)
@@ -41,13 +96,14 @@ userRouter.post('/users/validate', (req, res) => {
         }).catch((err) => {
             return res.status(400).send(err);
         });
-});
+});*/
 
 //route for finding a user by it's email
+//TODO: change to GET
 userRouter.post('/users/find', (req, res) => {
-    var body = _.pick(req.body, ['email']);
+    let email = req.decoded.userId.email;
 
-    User.findByEmail(body.email)
+    User.findByEmail(email)
         .then((user) => {
             return res.status(200).send(user);
         }).catch((err) => {
@@ -56,10 +112,11 @@ userRouter.post('/users/find', (req, res) => {
 });
 
 //route for updating a user email
-userRouter.post('/users/email/update', (req, res) => {
+userRouter.post('/users/email/update', verifyToken, (req, res) => {
+    let email = req.decoded.userId.email;
     var body = _.pick(req.body, ['email', 'password', 'newEmail']);
 
-    User.findByCredentials(body.email, body.password)
+    User.findByCredentials(email, body.password)
         .then((user) => {
             user.email = body.email
 
@@ -78,10 +135,11 @@ userRouter.post('/users/email/update', (req, res) => {
 });
 
 //route for updating a user password
-userRouter.post('/users/password/update', (req, res) => {
-    var body = _.pick(req.body, ['email', 'password', 'newPassword']);
+userRouter.post('/users/password/update', verifyToken, (req, res) => {
+    var body = _.pick(req.body, [ 'password', 'newPassword']);
+    let email = req.decoded.userId.email;
 
-    User.findByCredentials(body.email, body.password)
+    User.findByCredentials(email, body.password)
         .then((user) => {
             user.password = body.newPassword
 
@@ -100,10 +158,9 @@ userRouter.post('/users/password/update', (req, res) => {
 });
 
 //route for getting a user's calendars
-userRouter.post('/users/calendars/get', (req, res) => {
-    var body = _.pick(req.body, ['email']);
-
-    User.findByEmail(body.email)
+userRouter.get('/users/calendars/get', verifyToken, (req, res) => {
+    let email = req.decoded.userId.email;
+    User.findByEmail(email)
         .then((user) => {
             return res.status(200).send(user.calendars);
         }).catch((err) => {
@@ -114,9 +171,9 @@ userRouter.post('/users/calendars/get', (req, res) => {
 });
 
 //route for adding a calendar to a user
-userRouter.post('/users/calendars/add', (req, res) => {
+userRouter.post('/users/calendars/add', verifyToken, (req, res) => {
     var body = _.pick(req.body, ['email', 'calendar', 'edit']);
-
+    let email = req.decoded.userId.email;
     User.findByEmail(body.email)
         .then((user) => {
             let calendar = {
@@ -253,10 +310,11 @@ userRouter.post('/users/groups/add', (req, res) => {
 });
 
 //route for getting a user's friends
+//TODO: change to /GET
 userRouter.post('/users/friends/get', (req, res) => {
     var body = _.pick(req.body, ['email']);
-
-    User.findByEmail(body.email)
+    let email = req.decoded.userId.email;
+    User.findByEmail(email)
         .then((user) => {
             return res.status(200).send(user.calendars);
         }).catch((err) => {

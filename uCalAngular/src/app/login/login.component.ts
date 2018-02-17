@@ -34,6 +34,19 @@ export class LoginComponent implements OnInit {
       }, err => console.log(err));
   }
 
+  register() {
+    let email = this.loginForm.get('email').value;
+    let password = this.loginForm.get('password').value;
+    const headers = new HttpHeaders().set('responseType', 'text');
+    const body = new HttpParams()
+      .set('email', email)
+      .set('password', password);
+    this.http.post('/signup', body)
+      .subscribe((obj: any) => {
+        this.tokenHandler.setToken(obj.token);
+        this.router.navigate(['/calendar']);
+      }, err => console.log(err));
+  }
   ngOnInit() {
   }
 

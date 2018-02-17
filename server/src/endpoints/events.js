@@ -6,14 +6,22 @@ let express = require('express');
 const _ = require('lodash');
 var q = require('q');
 const { ObjectID } = require('mongodb');
+const verifyToken = require('../token-handler').verifyToken;
 
 let eventRouter = express.Router();
 //Create Event
 
 
-eventRouter.post('/events/create', (req, res) => {
-    var eventData = _.pick(req.body, ['name', 'date', 'allday', 'startTime', 'endTime', 'location', 'description', 'owner', 'calendar']);
+eventRouter.post('/events/create', verifyToken, (req, res) => {
+    var eventData = _.pick(req.body, ['name', 'date', 'allDay', 'startTime', 'endTime', 'location', 'description', 'calendar']);
+    eventData.owner = req.decoded.userId._id;
+    eventData.startTime = JSON.parse(eventData.startTime);
+    eventData.endTime = JSON.parse(eventData.endTime);
+    eventData.location = JSON.parse(eventData.location);
     var event = new UEvent(eventData);
+    
+    console.log(event);
+    console.log(eventData);
     /*
     event.save().catch(() => {
         return res.status(400).send("Failed to save event");
@@ -22,9 +30,9 @@ eventRouter.post('/events/create', (req, res) => {
 
      event.save().then((calendar) => {
         
-     Calendar.findByIdAndUpdate(calendar.owner,  
+     Calendar.findByIdAndUpdate(event.calendar,  
         {$push: {events: event}},
-        {new:true}).then((user) => {
+        ).then((user) => {
             return res.status(200).send(event);   
         }).catch(() => {
             return res.status(400).send("Failed to save event to calendar");
