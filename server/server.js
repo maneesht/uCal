@@ -106,6 +106,13 @@ app.get('/logout', (req, res) => {
     res.redirect('/login');
 });
 app.use('/', express.static('../uCalAngular/dist'));
+app.use('/', userRouter);
+app.use('/', friendsRouter);
+app.use('/', groupRouter);
+app.use('/', eventRouter);
+app.use('/', calendarRouter);
+
+//include endpoint functions
 
 app.use('/', userRouter);
 app.use('/', friendsRouter);

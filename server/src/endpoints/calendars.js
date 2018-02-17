@@ -13,7 +13,7 @@ calendarRouter.post('/users/:userID/calendars', (req, res) => {
 
     var calendar = new Calendar({
         name: calendarData.name,
-        description: (description in calendarData) ? calendarData.description : '',
+        description: calendarData.description || "",
         owner: req.params.userID,
         users: [req.params.userID]
     });
@@ -36,9 +36,10 @@ calendarRouter.post('/groups/:groupID/calendars', (req, res) => {
     Group.findById(req.params.groupID).then((group) => {
         var calendar = new Calendar({
             name: calendarData.name,
-            description: (description in calendarData) ? calendarData.description : '',
+            description: calendarData.description || "",
             owner: group.owner,
-            users: group.members
+            users: group.members,
+			group: req.params.groupID
         });
         Calendar.save().then((calendar) => {
             var promises = [];
@@ -66,11 +67,15 @@ calendarRouter.delete('/calendars/:calendarID', (req, res) => {
     //delete a calendar
     Calendar.findByIdAndRemove(req.params.calendarID).then((calendar) => {
         for (var x = 0; x < calendar.events.length; x++) {
-            UEvent.findByIdAndRemove(calendar.events[x]).catch((err) => {
+            Evento.findByIdAndRemove(calendar.events[x]).catch((err) => {
                 console.error(err);
+				return res.status(400).send("error removing events from the calendar?");
             });
         }
-        //TODO FINISH
+
+		//TODO remove the calendar from the owner's list of calendars
+
+		res.status(200).send(`Successfully deleted calendar ${req.params.calendarID}`);
     }).catch((err) => {
         return res.status(400).send("Failed to delete calendar");
     })
@@ -78,15 +83,17 @@ calendarRouter.delete('/calendars/:calendarID', (req, res) => {
 
 calendarRouter.get('/calendars/:calendarID', (req, res) => {
     Calendar.findById(req.params.calendarID).then((calendar) => {
-        var data = {
+		var data = {
             name: calendar.name,
             description: calendar.description,
             owner: calendar.owner,
-            events: []
+            events: [],
+			group: calendar.group,
+			users: calendar.users
         };
         var promises = [];
         for (var x = 0; x < calendar.events.length; x++) {
-            promises.push(UEvent.findById(calendar.events[x]).then((event) => {
+            promises.push(Evento.findById(calendar.events[x]).then((event)=>{
                 data.events.push(event);
             }).catch((err) => {
                 console.error(err);
@@ -104,13 +111,13 @@ calendarRouter.patch('/calendars/:calendarID', (req, res) => {
     //update calendar information (name, description)
     var updated = _.pick(req.body, ['calendar']).calendar;
     var data = {};
-    if (name in updated) {
+    if (updated.name) {
         data['name'] = updated.name;
     };
-    if (description in updated) {
+    if (updated.description) {
         data['description'] = updated.description;
     };
-    Calendar.findByIdAndUpdate(req.params.calendarID, data).then((calendar) => {
+    Calendar.findByIdAndUpdate(req.params.calendarID, data, {new: true }).then((calendar) => {
         return res.status(200).send(calendar);
     }).catch(() => {
         return res.status(400).send("Failed to update calendar");
@@ -121,22 +128,28 @@ calendarRouter.patch('/calendars/:calendarID/share', (req, res) => {
     //Share the calendar to other users
     var user = _.pick(req.body, ['users']).users;
     var editable = _.pick(req.body, ['edit']).edit;
-    Calendar.findByIdAndUpdate(req.params.calendarID, { $addToSet: { users: { $each: user } } }, { new: true }).then((calendar) => {
+    Calendar.findByIdAndUpdate(req.params.calendarID, {$addToSet: {users: {$each: user}}}, {new: true}).then((calendar) => {
         var promises = []
         for (var x = 0; x < user.length; x++) {
-            promises.push(User.findByIdAndUpdate(user[x], { $addToSet: { calendars: { calendarId: calendar._id, edit: editable } } }).then((user) => {
+            promises.push(User.findByIdAndUpdate(user[x], {$addToSet: {calendars: {calendarId: calendar._id, edit: editable}}}).then((user) => {
                 //pass
             }).catch((err) => {
-                console.error(err);
+                // console.error(err);
             }));
         }
         q.all(promises).then(() => {
-            return res.status(200).send("Shared Calendars with users")
+			//changed the result to return the calendar so the test can verify
+			return res.status(200).send(calendar)
+            // return res.status(200).send("Shared Calendars with users")
         })
     }).catch((err) => {
-        console.error(err);
+        // console.error(err);
         return res.status(400).send("Failed to share calendar")
     });
 });
+
+//TODO add a route for changing owner?
+
+//TODO add a route for sharing the calendar with a group
 
 module.exports = calendarRouter;

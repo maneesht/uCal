@@ -1,22 +1,23 @@
 const mongoose = require('mongoose');
 
 var UserSchema = new mongoose.Schema({
-    password: {
-        type: String,
-        require: true,
-    },
-    email: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    calendars: [{
-        calendarId: mongoose.Schema.Types.ObjectId,
-        edit: Boolean
-    }],
-    groups: [mongoose.Schema.Types.ObjectId],
-    groupinvites: [mongoose.Schema.Types.ObjectId],
-    friends: [mongoose.Schema.Types.ObjectId]
+  password: {
+    type: String,
+    require: true,
+  },
+  email: {
+	type: String,
+    required: true,
+    unique: true
+  },
+  calendars: [{
+    calendarId: mongoose.Schema.Types.ObjectId,
+    edit: Boolean
+  }],
+  groups: [mongoose.Schema.Types.ObjectId],
+  groupinvites: [mongoose.Schema.Types.ObjectId],
+  friends: [mongoose.Schema.Types.ObjectId],
+  friendRequests: [mongoose.Schema.Types.ObjectId]
 });
 
 //finds and returns a user object with the passed username and password

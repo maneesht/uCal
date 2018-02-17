@@ -64,6 +64,5 @@ describe('LoginComponent', () => {
     emailCtrl.setValue('testing@gmail.com');
     expect(form.valid).toEqual(true);
   }));
-  
-});
 
+});

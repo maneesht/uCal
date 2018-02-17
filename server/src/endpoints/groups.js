@@ -10,59 +10,102 @@ let groupRouter = express.Router();
 groupRouter.patch('/user/:userId/groups/:groupID/accept', (req, res) => {
     //accept or decline a group invite
     var accept = _.pick(req.body, ['accept']).accept;
-    if (accept) {
-        Group.findOneAndUpdate({
-            _id: req.params.groupID,
-            $elemMatch: { invited: user._id }
-        }, {
-                $push: { members: user._id },
-                $pull: { invited: user._id }
-            }).then(() => {
-                return res.status(200).send("User added to group");
-            }).catch(() => {
-                return res.status(400).send("Failed to add user to group");
-            });
-    } else {
-        Group.findOneAndUpdate({
-            _id: req.params.groupID,
-            $elemMatch: { invited: user._id }
-        }, {
-                $pull: { invited: user._id }
-            }).then(() => {
-                return res.status(200).send("User declined invitation to group");
-            }).catch(() => {
-                return res.status(400).send("Failed to decline invitation to group");
-            });
-    };
+
+    if (accept == true) { //== true is needed because accept will be a string and always evaluate to true but == converts types
+		//update group
+        Group.findOneAndUpdate(
+			{ _id: req.params.groupID },
+			{ $addToSet: { members: req.params.userId },
+              $pull: { invited: req.params.userId } }
+		  ).then(() => {
+			//update user
+			User.findOneAndUpdate({
+	            _id: req.params.userId
+	        }, {
+				$addToSet: { groups: req.params.groupID },
+	            $pull: { groupinvites: req.params.groupID }
+	        }).then(() => {
+				return res.status(200).send("User added to group");
+			}).catch((err) => {
+	            return res.status(400).send("Failed to update the user");
+	        });
+        }).catch((err) => {
+            return res.status(400).send("Failed to update the group");
+        });
+    }
+	else if (accept == false) {
+        Group.findOneAndUpdate(
+			{ _id: req.params.groupID },
+			{ $pull: { invited: req.params.userId } }
+		).then(() => {
+			//update user
+			User.findOneAndUpdate({
+				_id: req.params.userId
+			}, {
+				$pull: { groupinvites: req.params.groupID }
+			}).then(() => {
+				return res.status(200).send("User succesfully declined invitation to group");
+			}).catch((err) => {
+				return res.status(400).send("Failed to update the user");
+			});
+        }).catch(() => {
+            return res.status(400).send("Failed to update the group");
+        });
+    }
+	else {
+		res.status(400).send("please send true or false for accept value");
+	}
 });
 
 groupRouter.patch('/groups/:groupID/invite', (req, res) => {
     //Invite users to the group
     var invites = _.pick(req.body, ['users']).users;
 
-    Group.findById(req.params.groupID, { $addToSet: { invited: { $each: invites } } }, { new: true }).then((group) => {
-        for (var x = 0; x < group.invited.length; x++) {
-            User.findByIdAndUpdate(group.invited[x], { $addToSet: { groupinvites: group._id } });
-        };
-    }).catch(() => {
+	//TODO make a check to see if the user already has the group in their groups, not just their invited list
+
+    Group.findByIdAndUpdate(
+		req.params.groupID,
+		{ $addToSet: { invited: { $each: invites } } },
+		{ new: true })
+		.then((group) => {
+			/* TODO this should be redesigned because you have to go to each user in the db that you are
+			*  inviting to the group and update their information which requires seperate requests and
+			*  it becomes difficult to send responses because you won't know for sure if everything
+			*  successful
+			*/
+	        for (i = 0; i < invites.length; i++) {
+	            User.findByIdAndUpdate(
+					invites[i],
+					{ $addToSet: { groupinvites: req.params.groupID } })
+					.then((user) => {
+						console.log(`group added to ${user.email}\'s invites`);
+					}).catch((err) => {
+						return res.status(400).send(`Failed to add the group to ${invites[i]}\'s groups`  + err)
+					});
+	        };
+			res.status(200).send();
+    }).catch((err) => {
+		console.log(err);
         return res.status(400).send("Failed to invite users to group");
     })
 });
 
 
 groupRouter.post('/user/:userID/groups', (req, res) => {
-    //Create a new Group 
+    //Create a new Group
     var groupinfo = _.pick(req.body, ['group']).group;
     var group = new Group({
         name: groupinfo.name,
         creator: req.params.userID,
-        invited: ((invited in groupinfo) ? groupinfo.invited : []),
+        invited: groupinfo.invited || [],
         members: [req.params.userID]
     });
 
+	//TODO add the group to the creator's groups
+
     group.save().then((group) => {
-        for (var x = 0; x < group.invited.length; x++) {
-            User.findByIdAndUpdate(group.invited[x], { $push: { groupinvites: group._id } });
+        for (var x = 0; x < group.invited.length; x ++) {
+            User.findByIdAndUpdate(group.invited[x], {$push: {groupinvites: group._id}});
         };
         return res.status(200).send(group);
     }).catch(() => {
@@ -90,7 +133,7 @@ groupRouter.delete('/users/:userID/groups/:groupID', (req, res) => {
         return res.status(404).send("Group not Found");
     });
 });
-
+//TODO delete a group
 groupRouter.delete('/groups/:groupId', (req, res) => {
 
 });

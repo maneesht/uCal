@@ -9,10 +9,11 @@ let express = require('express');
 let friendRouter = express.Router();
 friendRouter.post('/users/:userID/friends/:friendID', (req, res) => {
     //Create a friend request from userID to friendID
-    User.findByIdAndUpdate(req.params.friendID, { $addToSet: { friendRequests: req.params.userID } }).then((users) => {
+    User.findByIdAndUpdate(req.params.friendID, {$addToSet: {friendRequests: req.params.userID}}).then((users) => {
         return res.status(200).send("Friend request sent");
-    }).catch((err) => {
-        return res.status(404).send("User not Found")
+    }).catch(() => {
+        console.error(err);
+        return res.status(400).send("Failed to send friend request")
     });
 });
 

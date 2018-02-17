@@ -5,7 +5,10 @@
   "main": "",
   "scripts": {
     "start": "node server.js",
-    "test": "mocha"
+    "test": "export NODE_ENV=test && mocha test/*.test.js"
+  },
+  "engines": {
+    "node": "8.1.4"
   },
   "author": "Maneesh Tewani <maneesh.tewani@gmail.com>",
   "license": "ISC",

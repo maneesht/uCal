@@ -5,7 +5,7 @@ mongoose.Promise = global.Promise;
 const mongoUrl = process.env.MONGODB_URI;
 
 mongoose.connect(mongoUrl, {
-  useMongoClient: true,
+	useMongoClient: true,
 });
 
 var server = mongoose.connection;

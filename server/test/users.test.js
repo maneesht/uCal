@@ -11,6 +11,8 @@ const { users, populateUsers } = require('./seed/seed');
 require("supertest").agent(app.listen());
 beforeEach(populateUsers);
 
+describe('USER TESTS', () => {
+
 describe('POST /users/login', () => {
 	it('should return user', (done) => {
 		var email = users[0].email;
@@ -28,9 +30,9 @@ describe('POST /users/login', () => {
 			.end(done);
 	});
 
-    it('should return a 400 because the user cant be found', (done) => {
-        var email = 'fake@example.com';
-        var password = 'fakePass';
+	it('should return a 400 because the user cant be found', (done) => {
+		var email = 'fake@example.com';
+		var password = 'fakePass';
 
 		request(app)
 			.post('/users/login')
@@ -43,14 +45,14 @@ describe('POST /users/login', () => {
 	});
 });
 
-describe('POST /users', () => {
-	
+describe('POST /users/create', () => {
+
 	it('should return user', (done) => {
 		var email = "newemail@example.com";
 		var password = 'password';
 
 		request(app)
-			.post('/users')
+			.post('/users/create')
 			.send({
 				email: email,
 				password: password
@@ -66,7 +68,7 @@ describe('POST /users', () => {
 
 	it('should return 400 because the user already exists', (done) => {
 		request(app)
-			.post('/users')
+			.post('/users/create')
 			.send({
 				email: users[0].email,
 				password: users[0].password
@@ -81,7 +83,7 @@ describe('POST /users', () => {
 
 	it('should return 400 because the email is improperly formatted', (done) => {
 		request(app)
-			.post('/users')
+			.post('/users/create')
 			.send({
 				email: "email",
 				password: "password"
@@ -96,7 +98,7 @@ describe('POST /users', () => {
 
 	it('should return 400 because the request does not contain all information necessary', (done) => {
 		request(app)
-			.post('/users')
+			.post('/users/create')
 			.send({
 				email: "email@example.com"
 			})
@@ -165,7 +167,7 @@ describe('GET /users/:userID', () => {
 						expect(res.body).toContainKeys(['email', 'userId', 'groups', 'calendars', 'friends']);
 						expect(res.body.email).toEqual(users[0].email);
 						expect(res.body.userId).toEqual(id);
-						expect(res.body.groups).toBeAn(Array);	
+						expect(res.body.groups).toBeAn(Array);
 						expect(res.body.calendars).toBeAn(Array);
 						expect(res.body.friends).toBeAn(Array);
 					})
@@ -183,4 +185,4 @@ describe('GET /users/:userID', () => {
 			.end(done);
 	});
 });
-
+});
