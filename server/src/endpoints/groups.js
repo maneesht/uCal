@@ -68,6 +68,11 @@ groupRouter.patch('/groups/:groupID/invite', (req, res) => {
 		{ $addToSet: { invited: { $each: invites } } },
 		{ new: true })
 		.then((group) => {
+			/* TODO this should be redesigned because you have to go to each user in the db that you are
+			*  inviting to the group and update their information which requires seperate requests and
+			*  it becomes difficult to send responses because you won't know for sure if everything
+			*  successful
+			*/
 	        for (i = 0; i < invites.length; i++) {
 	            User.findByIdAndUpdate(
 					invites[i],
@@ -78,7 +83,7 @@ groupRouter.patch('/groups/:groupID/invite', (req, res) => {
 						return res.status(400).send(`Failed to add the group to ${invites[i]}\'s groups`  + err)
 					});
 	        };
-			res.status(200).send(group);
+			res.status(200).send();
     }).catch((err) => {
 		console.log(err);
         return res.status(400).send("Failed to invite users to group");

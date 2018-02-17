@@ -85,7 +85,34 @@ describe('PATCH /user/:userId/groups/:groupID/accept', () => {
 //test inviting users to a group
 describe('PATCH /groups/:groupID/invite', () => {
 
-	//TODO invite a user normally
+	//invite a user normally
+	it('should invite a user to a group', (done) => {
+
+		var body = {
+			users: [ users[1]._id ]
+		};
+
+		request(app)
+			.patch(`/groups/${groups[0]._id}/invite`)
+			.send(body)
+			.expect(200)
+			//need to refactor the endpoint before you can test what the result looks like
+			// .expect((res) => {
+			// 	// console.log(res);
+			// 	expect(res.body.invited).toContain(users[1]._id.toHexString());
+			// })
+			.end(done);
+	});
+
+	//TODO invite multiple users to a group
+
+	//TODO invite two users to a group, one who is already in the group and one who isn't
+
+	//TODO invite two users to a group, one has already been invited and one who hasn't
+
+	//TODO invite a user that already is in that group
+
+	//TODO invite a user that has already been invited
 
 	//TODO invite a user that doesn't exist
 
