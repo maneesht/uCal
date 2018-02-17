@@ -3,7 +3,7 @@ const { ObjectID } = require('mongodb');
 var { User } = require('./../../src/models/user');
 var { Calendar } = require('./../../src/models/calendar');
 var { Group } = require('./../../src/models/group');
-var { Evento } = require('./../../src/models/event');
+var { UEvent } = require('./../../src/models/event');
 
 const userOneId = new ObjectID();
 const userTwoId = new ObjectID();
@@ -82,9 +82,9 @@ const populateCalendars = (done) => {
 };
 
 const populateEvents = (done) => {
-    Evento.remove({}).then(() => {
-        var eventOne = new Evento(eventss[0]).save();
-        var calendarTwo = new Evento(events[1]).save();
+    UEvent.remove({}).then(() => {
+        var eventOne = new UEvent(events[0]).save();
+        var calendarTwo = new UEvent(events[1]).save();
 
         return Promise.all([eventOne, eventTwo]);
 

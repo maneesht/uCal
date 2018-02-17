@@ -1,7 +1,7 @@
 var User = require('../models/user').User;
 var Calendar = require('../models/calendar').Calendar;
 var Group = require('../models/group').Group;
-var Evento = require('../models/event').Evento;
+var UEvent = require('../models/event').UEvent;
 let express = require('express');
 const _ = require('lodash');
 var q = require('q');
@@ -13,14 +13,13 @@ let eventRouter = express.Router();
 
 eventRouter.post('/events/create', (req, res) => {
     var eventData = _.pick(req.body, ['name', 'date', 'allday', 'startTime', 'endTime', 'location', 'description', 'owner', 'calendar']);
-    var event = new Evento(eventData);
+    var event = new UEvent(eventData);
     /*
     event.save().catch(() => {
         return res.status(400).send("Failed to save event");
     });
     */
 
-     var calendar = Calendar.findById({_id: eventData.calendar});
      event.save().then((calendar) => {
         
      Calendar.findByIdAndUpdate(calendar.owner,  
@@ -39,7 +38,8 @@ eventRouter.post('/events/create', (req, res) => {
 
 //Update Event
 eventRouter.patch('/events/updateEvent', (req, res) => {
-    Evento.findByIdAndUpdate( ObjectID(req.body._id) , {name: req.body.name, date: req.body.date, allDay: req.body.allDay, startTime:  req.body.startTime, endTime: req.body.endTime, location: req.body.location, description: req.body.description, owner: req.body.owner, calendar: req.body.calendar}).then((event) => {
+    UEvent.findByIdAndUpdate( ObjectID(req.body._id) , {name: req.body.name, date: req.body.date, allDay: req.body.allDay, startTime:  req.body.startTime, endTime: req.body.endTime, location: req.body.location, description: req.body.description, owner: req.body.owner, calendar: req.body.calendar})
+    .then((event) => {
         return res.status(200).send(event);
     }).catch((err) => {
         return res.status(400).send(err);
@@ -48,8 +48,8 @@ eventRouter.patch('/events/updateEvent', (req, res) => {
 
 //Get Event
 eventRouter.get('/events/getevent', (req, res) => {
-
-        Evento.findById( ObjectID(req.body.id)).then(event => {
+    console.log('getting event');
+        UEvent.findById( ObjectID(req.body.id)).then(event => {
             var data = {
             name: event.name,
             date: event.date,
@@ -69,8 +69,8 @@ eventRouter.get('/events/getevent', (req, res) => {
 
 //Delete Event
 eventRouter.delete('/events/removeEvent', (req, res) => {
-    var event = Evento.findById(ObjectID(req.body.id));
-    Evento.findByIdAndRemove(req.params.id).then((event) => {
+    var event = UEvent.findById(ObjectID(req.body.id));
+    UEvent.findByIdAndRemove(req.params.id).then((event) => {
         //remove from calendar
        // Calendar.findByIdAndUpdate(ObjectID(event.calendar), {$pull: {events: event}}).then((calendar) => {
             return res.status(200).send("event removed from calendar");

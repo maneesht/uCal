@@ -106,14 +106,15 @@ app.get('/logout', (req, res) => {
     res.redirect('/login');
 });
 app.use('/', express.static('../uCalAngular/dist'));
-app.get('/*', (req, res) => {
-    res.sendFile('index.html', { root: '../uCalAngular/dist' });
-});
+
 app.use('/', userRouter);
 app.use('/', friendsRouter);
 app.use('/', groupRouter);
 app.use('/', eventRouter);
 app.use('/', calendarRouter);
+app.get('/*', (req, res) => {
+    res.sendFile('index.html', { root: '../uCalAngular/dist' });
+});
 app.listen(port, () => console.log(`Listening on port ${port}`));
 
 module.exports = app;

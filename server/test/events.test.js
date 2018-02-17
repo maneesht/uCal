@@ -6,7 +6,7 @@ const  app  = require('./../server');
 var { User } = require('./../src/models/user');
 var { Calendar } = require('./../src/models/calendar');
 var { Group } = require('./../src/models/group');
-var { Evento } = require('./../src/models/event');
+var { UEvent } = require('./../src/models/event');
 const { users, calendars, events, populateUsers, populateCalendars, populateEvents } = require('./seed/seed');
 
 require("supertest").agent(app.listen());
@@ -18,10 +18,10 @@ before(() => {
     calendarOne = new Calendar(calendars[0]);
     calendarOne.save();
 
-    eventOne = new Evento(events[0]);
+    eventOne = new UEvent(events[0]);
     eventOne.save();
 
-    eventTwo = new Evento(events[1]);
+    eventTwo = new UEvent(events[1]);
     eventTwo.save();
 
 

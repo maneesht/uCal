@@ -1,7 +1,7 @@
 var User = require('../models/user').User;
 var Calendar = require('../models/calendar').Calendar;
 var Group = require('../models/group').Group;
-var Evento = require('../models/event').Evento;
+var UEvent = require('../models/event').UEvent;
 let express = require('express');
 const _ = require('lodash');
 const q = require('q');
@@ -134,7 +134,7 @@ groupRouter.get('/groups/:groupId', (req, res) => {
                     events: []
                 });
                 for (var y = 0; y < calendar.events.length; y++) {
-                    Evento.findById(calendar.events[y]).then((event) => {
+                    UEvent.findById(calendar.events[y]).then((event) => {
                         data.calendars.events.push(event);
                     }).catch((err) => {
                         console.error(err);
