@@ -67,7 +67,7 @@ calendarRouter.delete('/calendars/:calendarID', (req, res) => {
     //delete a calendar
     Calendar.findByIdAndRemove(req.params.calendarID).then((calendar) => {
         for (var x = 0; x < calendar.events.length; x++) {
-            Evento.findByIdAndRemove(calendar.events[x]).catch((err) => {
+            UEvent.findByIdAndRemove(calendar.events[x]).catch((err) => {
                 console.error(err);
 				return res.status(400).send("error removing events from the calendar?");
             });
@@ -93,7 +93,7 @@ calendarRouter.get('/calendars/:calendarID', (req, res) => {
         };
         var promises = [];
         for (var x = 0; x < calendar.events.length; x++) {
-            promises.push(Evento.findById(calendar.events[x]).then((event)=>{
+            promises.push(UEvent.findById(calendar.events[x]).then((event)=>{
                 data.events.push(event);
             }).catch((err) => {
                 console.error(err);

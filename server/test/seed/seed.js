@@ -104,9 +104,9 @@ const populateCalendars = (done) => {
 };
 
 const populateEvents = (done) => {
-	Evento.remove({}).then(() => {
-		var eventOne = new Evento(events[0]).save();
-		var eventTwo = new Evento(events[1]).save();
+	UEvent.remove({}).then(() => {
+		var eventOne = new UEvent(events[0]).save();
+		var eventTwo = new UEvent(events[1]).save();
 
 		return Promise.all([eventOne, eventTwo]);
 
@@ -114,9 +114,9 @@ const populateEvents = (done) => {
 };
 
 const populateGroups = (done) => {
-	Evento.remove({}).then(() => {
-		var groupOne = new Evento(groups[0]).save();
-		var groupTwo = new Evento(groups[1]).save();
+	UEvent.remove({}).then(() => {
+		var groupOne = new UEvent(groups[0]).save();
+		var groupTwo = new UEvent(groups[1]).save();
 
 		return Promise.all([groupOne, groupTwo]);
 
