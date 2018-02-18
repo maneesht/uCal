@@ -148,7 +148,7 @@ export class CalendarComponent implements OnInit {
     let params = new HttpParams();
     this.addEventError = '';
     if(this.eventEndDate.getTime() < this.eventStartDate.getTime()) {
-      this.addEventError = 'Start Date needs to be after End Date';
+      this.addEventError = 'Start Date needs to be before End Date';
       return false;
     }
     this.calendarIdObservable.subscribe(calendars => {

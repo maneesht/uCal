@@ -91,4 +91,15 @@ describe('CalendarComponent', () => {
     expect(result).toBe(false);
     expect(comp.defaultStartDate).toEqual(undefined);
   }));
+  it('should give an error when start date is after end date', async(() => {
+    fixture.detectChanges();
+    const compiled = fixture.debugElement.nativeElement;
+    comp.startTime = "19:30";
+    comp.endTime = "18:30";
+    let date = "2018-02-18";
+    comp.defaultStartDate = date;
+    comp.defaultEndDate = date;
+    comp.addEvent();
+    expect(comp.addEventError).toEqual("Start Date needs to be before End Date");
+  }));
 });
