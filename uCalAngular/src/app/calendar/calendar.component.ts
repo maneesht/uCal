@@ -19,6 +19,48 @@ import { switchMap, concatMap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { mergeMap } from 'rxjs/operator/mergeMap';
 
+interface ServerEvent {
+
+  name: {
+    type: String,
+    required: true
+  },
+  date: {
+    day: Number,
+    month: Number,
+    year: Number
+  },
+  allDay: Boolean,
+  startTime: {
+    day: Number,
+    month: Number,
+    year: Number,
+    hour: Number,
+    minute: Number
+  },
+  endTime: {
+    day: Number,
+    month: Number,
+    year: Number,
+    hour: Number,
+    minute: Number
+  },
+  location: {
+    name: String,
+    longitude: Number,
+    latitude: Number
+  },
+  description: String,
+  owner: string,
+  calendar: string,
+  invites: string,
+  rsvp: {
+    required: false,
+    accepted: string,
+    declined: string,
+    noResponse: string,
+  }
+}
 
 @Component({
   selector: 'app-calendar',
@@ -45,7 +87,7 @@ export class CalendarComponent implements OnInit {
   eventEndDate: Date;
   startTime: string;
   endTime: string;
-
+  calendarIdObservable: Observable<any>;
   events: CalendarEvent[] = [];
 
   refresh: Subject<any> = new Subject();
@@ -80,7 +122,7 @@ export class CalendarComponent implements OnInit {
     return true;
   }
 
-  private getDismissReason(reason: any): string {
+  private getDismissReason(reason: ModalDismissReasons): string {
     if (reason === ModalDismissReasons.ESC) {
       return 'by pressing ESC';
     } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
@@ -109,34 +151,35 @@ export class CalendarComponent implements OnInit {
       this.addEventError = 'Start Date needs to be after End Date';
       return false;
     }
-    params = params
-      .set('name', this.eventName)
-      .set('date', JSON.stringify({day: this.eventStartDate.getDate(), month: this.eventStartDate.getMonth(), year: this.eventStartDate.getFullYear()}))
-      .set('allDay', 'false')
-      .set('startTime', JSON.stringify({hour: this.eventStartDate.getHours(), minute: this.eventStartDate.getMinutes(), year: this.eventStartDate.getFullYear(), month: this.eventStartDate.getMonth(), day: this.eventStartDate.getDate()}))
-      .set('endTime', JSON.stringify({hour: this.eventEndDate.getHours(), minute: this.eventEndDate.getMinutes(), year: this.eventEndDate.getFullYear(), month: this.eventEndDate.getMonth(), day: this.eventEndDate.getDate()}))
-      .set('location', JSON.stringify({location: 'Lawson'}))
-      .set('description', 'I hate the backend team')
-      .set('calendar', "5a88d0aa130a9d0de8fb2255");
-    this.http.post(`/events/create`, params).subscribe(data => console.log(data));
-    this.refresh.next();
+    this.calendarIdObservable.subscribe(calendars => {
+      let defaultCalendar = calendars[0]._id;
+      params = params
+        .set('name', this.eventName)
+        .set('date', JSON.stringify({ day: this.eventStartDate.getDate(), month: this.eventStartDate.getMonth(), year: this.eventStartDate.getFullYear() }))
+        .set('allDay', 'false')
+        .set('startTime', JSON.stringify({ hour: this.eventStartDate.getHours(), minute: this.eventStartDate.getMinutes(), year: this.eventStartDate.getFullYear(), month: this.eventStartDate.getMonth(), day: this.eventStartDate.getDate() }))
+        .set('endTime', JSON.stringify({ hour: this.eventEndDate.getHours(), minute: this.eventEndDate.getMinutes(), year: this.eventEndDate.getFullYear(), month: this.eventEndDate.getMonth(), day: this.eventEndDate.getDate() }))
+        .set('location', JSON.stringify({ location: 'Lawson' }))
+        .set('description', 'I hate the backend team')
+        .set('calendar', defaultCalendar);
+      this.http.post(`/events/create`, params).subscribe(data => console.log(data));
+      this.refresh.next();
+    });
   }
   createHTTP(id) {
     return this.http.get(`/calendars/${id}`);
   }
   
-
   ngOnInit() {
-    this.http.get('/users/calendars/get').mergeMap((calendar: any[]) => {
+    this.calendarIdObservable = this.http.get('/users/calendars/get');
+    this.calendarIdObservable.mergeMap((calendar: any[]) => {
       let observable$ = calendar.map(calendar => this.createHTTP(calendar._id));
       return Observable.forkJoin(observable$);
     }).subscribe(data => {
       let defaultCalendar = data[0];
       let events: any[] = defaultCalendar['events'];
-      let modifiedEvents = events.map(event => {
-        console.log(event);
+      let modifiedEvents: CalendarEvent[] = events.map(event => {
         return {
-          ...event,
           start: new Date(event.startTime.year, event.startTime.month, event.startTime.day, event.startTime.hour, event.startTime.minute),
           title: event.name,
           color: { primary: "blue", secondary: "lightblue" },
@@ -144,9 +187,7 @@ export class CalendarComponent implements OnInit {
         }
       });
       this.events = modifiedEvents;
-      console.log(this.events);
     });
-    //this.http.get('/api/get-events').subscribe(resp => console.log(resp));
   }
   viewDate: Date = new Date();
   dayClicked({ date, events }: { date: Date; events: CalendarEvent[] }): void {

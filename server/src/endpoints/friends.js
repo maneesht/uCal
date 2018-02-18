@@ -23,7 +23,7 @@ friendRouter.delete('/users/:userID/friends/:friendID', (req, res) => {
         User.findByIdAndUpdate(req.params.friendID, { $pull: { friends: user._id } }).then((friend) => {
             return res.status(200).send("Removed Friend");
         }).catch((err) => {
-            return res.status(400).send("Some Error hfriendRouterened");
+            return res.status(400).send("Some Error with friendRouter");
         });
     }).catch((err) => {
         return res.status(400).send("Some Error hfriendRouterened");
