@@ -105,6 +105,17 @@ app.get('/logout', (req, res) => {
     req.logout();
     res.redirect('/login');
 });
+//route for finding a user by it's email
+app.post('/users/find', (req, res) => {
+	var body = _.pick(req.body, ['email']);
+
+	User.findByEmail(body.email)
+		.then((user) => {
+			res.status(200).send(user);
+		}).catch((err) => {
+			res.status(400).send(err);
+		});
+});
 app.use('/', express.static('../uCalAngular/dist'));
 app.use('/', userRouter);
 app.use('/', friendsRouter);

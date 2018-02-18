@@ -19,25 +19,25 @@ describe('POST /users/login', () => {
 		var password = users[0].password;
 
 		request(app)
-			.post('/users/login')
+			.post('/login')
 			.send({email, password})
 			.expect(200)
 			.expect((res) => {
-				expect(res.body._id).toBe(users[0]._id.toHexString());
-				expect(res.body.email).toBe(users[0].email);
-				expect(res.body.password).toBe(users[0].password);
+				expect(res.body).toExist;
+				expect(res.body.message).toEqual("Success!");
+				expect(res.body.token).toExist;
 			})
 			.end(done);
 	});
 
-	it('should return a 400 because the user cant be found', (done) => {
+	it('should return a 404 because the user cant be found', (done) => {
 		var email = 'fake@example.com';
 		var password = 'fakePass';
 
 		request(app)
-			.post('/users/login')
+			.post('/login')
 			.send({email, password})
-			.expect(400)
+			.expect(404)
 			.expect((res) => {
 				expect(res.body).toExist;
 			})
@@ -60,7 +60,7 @@ describe('POST /users/create', () => {
 			.expect(200)
 			.expect((res) => {
 				expect(res.body).toExist;
-				expect(res.body).toContainKeys(['email', 'password']);
+				expect(res.body).toContainKeys(['email']);
 				expect(res.body.email).toEqual(email);
 			})
 			.end(done);
@@ -132,7 +132,7 @@ describe('PATCH /users/:userID', () => {
 					})
 					.end(() => {
 						request(app)
-							.post('/users/login')
+							.post('/login')
 							.send({email: users[0].email, password: "newPass"})
 							.expect(200)
 							.expect((res) => {

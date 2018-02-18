@@ -25,9 +25,9 @@ userRouter.post('/users/create', (req, res) => {
 
     user.save()
         .then(() => {
-            return res.status(200).send("account created for: " + body.email);
+            return res.status(200).send({email: body.email});
         }).catch((err) => {
-            return res.status(400).send(err);
+            return res.status(400).send("Account already exists for: " + body['email']);
         });
 });
 
