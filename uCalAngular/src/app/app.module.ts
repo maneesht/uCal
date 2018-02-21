@@ -22,6 +22,7 @@ import { JwtModule } from '@auth0/angular-jwt';
 import { HttpClientModule } from '@angular/common/http';
 
 import { SettingsComponent } from './settings/settings.component';
+import { HoverEventDirective } from './calendar/directives/hover-event.directive';
 
 
 @NgModule({
@@ -32,7 +33,8 @@ import { SettingsComponent } from './settings/settings.component';
     LoginComponent,
     GroupComponent,
     LoginSuccessComponent,
-    SettingsComponent
+    SettingsComponent,
+    HoverEventDirective
   ],
   imports: [
     BrowserModule,

@@ -30,58 +30,38 @@
   <mwl-calendar-week-view *ngSwitchCase="'week'" [viewDate]="viewDate" [events] ="events" [refresh] = "refresh" (dayClicked)="dayClicked($event.day)">
   </mwl-calendar-week-view>
 </div>
+<ng-template #content let-c="close" let-d="dismiss">
+  <div class="modal-header" >
+    <h4 class="modal-title">Create Event</h4>
+    <button type="button" class="close" aria-label="Close" (click)="d('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    Event name:<br>
+    <input type="text" [(ngModel)]="eventName" name="eventName"><br>
+    Start Time and Day: <br>
+    <input type="date" [(ngModel)]="defaultStartDate" name="start"><br>
+    <input type="time" [(ngModel)]="startTime" name="usr_time"><br>
+    End Time and Day: <br>
+    <input type="date" [(ngModel)]="defaultEndDate" name="end"><br>
+    <input type="time" [(ngModel)]="endTime" name="usr_time">
+    <div *ngIf="addEventError" style="color: red">{{addEventError}}</div>
+    <br><button type="button" class="btn btn-outline-dark" (click)="addEvent()">Add Event</button><br>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-dark" (click)="c('Close click')">Close</button>
+  </div>
+</ng-template>
 <form>
-  <!-- <button type="button" (click)="changeStatus()">Change Status</button> -->
-  <ng-template #content let-c="close" let-d="dismiss">
-      <div class="modal-header">
-        <h4 class="modal-title">Create Event</h4>
-        <button type="button" class="close" aria-label="Close" (click)="d('Cross click')">
-          <span aria-hidden="true">&times;</span>
-        </button>
+  <ng-template #customCellTemplate let-day="day" let-locale="locale">
+    <div appHoverEvent [button]="btn">
+      <div class="cal-cell-top" >
+        <span class="cal-day-badge" *ngIf="day.badgeTotal > 0">{{ day.badgeTotal }}</span>
+        <span class="cal-day-number">{{ day.date | calendarDate:'monthViewDayNumber':locale }}</span>
       </div>
-      <div class="modal-body">
-        <p>Event name: </p>
-        <input type="text" [(ngModel)]="eventName" name="eventName"><br>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline-dark" (click)="c('Close click')">Close</button>
-      </div>
-    </ng-template>
-    <button class="btn btn-lg btn-outline-primary" (click)="open(content)">Create Event</button>
-    <hr>
-    <pre>{{closeResult}}</pre>
-
-    <ng-template #customCellTemplate let-day="day" let-locale="locale">
-        <div class="cal-cell-top">
-          <span class="cal-day-badge" *ngIf="day.badgeTotal > 0">{{ day.badgeTotal }}</span>
-          <span class="cal-day-number">{{ day.date | calendarDate:'monthViewDayNumber':locale }}</span>
-        </div>
-        <ng-template #content let-c="close" let-d="dismiss" >
-            <div class="modal-header" >
-              <h4 class="modal-title">Create Event</h4>
-              <button type="button" class="close" aria-label="Close" (click)="d('Cross click')">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div class="modal-body">
-              Event name:<br>
-              <input type="text" [(ngModel)]="eventName" name="eventName"><br>
-              Start Time and Day: <br>
-              <input type="date" [(ngModel)]="defaultStartDate" name="start"><br>
-              <input type="time" [(ngModel)]="startTime" name="usr_time"><br>
-              End Time and Day: <br>
-              <input type="date" [(ngModel)]="defaultEndDate" name="end"><br>
-              <input type="time" [(ngModel)]="endTime" name="usr_time">
-              <div *ngIf="addEventError" style="color: red">{{addEventError}}</div>
-              <br><button type="button" class="btn btn-outline-dark" (click)="addEvent()">Add Event</button><br>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-outline-dark" (click)="c('Close click')">Close</button>
-            </div>
-          </ng-template>
-          <button class="btn btn-sm btn-outline-primary" (click)="open(content)" (click)="addDates(day.date)">Create Event</button>
-          <hr>
-          <pre>{{closeResult}}</pre>
-        <!-- <small style="margin: 5px">There are {{ day.events.length }} events on this day</small> -->
-      </ng-template>
+      <button #btn class="btn btn-sm btn-outline-primary d-block mx-auto" (click)="open(content)" (click)="addDates(day.date)">Create Event</button>
+      <pre>{{closeResult}}</pre>
+    </div>
+  </ng-template>
 </form>
