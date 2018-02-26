@@ -1,0 +1,19 @@
+<div *ngIf="group">
+  <div class="card">
+    <div class="card-body">
+      <div class="form-group">
+        <label>Name: </label>
+        <input class="form-control" [(ngModel)]="group.name">
+      </div>
+      <ul class="list-group">
+        Members:
+        <li class="list-group-item" *ngFor="let member of group.members">
+          {{member}}
+          <button class="btn btn-sm btn-danger float-right" (click)="removeMember(member)">x</button>
+        </li>
+      </ul>
+      <button class="btn btn-success float-right" (click)="save()">Save</button>
+    </div>
+  </div>
+</div>
+

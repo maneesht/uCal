@@ -23,6 +23,8 @@ import { HttpClientModule } from '@angular/common/http';
 
 import { SettingsComponent } from './settings/settings.component';
 import { HoverEventDirective } from './calendar/directives/hover-event.directive';
+import { GroupDetailComponent } from './group-detail/group-detail.component';
+import { GroupService } from './group/group.service';
 
 
 @NgModule({
@@ -34,7 +36,8 @@ import { HoverEventDirective } from './calendar/directives/hover-event.directive
     GroupComponent,
     LoginSuccessComponent,
     SettingsComponent,
-    HoverEventDirective
+    HoverEventDirective,
+    GroupDetailComponent
   ],
   imports: [
     BrowserModule,
@@ -56,7 +59,7 @@ import { HoverEventDirective } from './calendar/directives/hover-event.directive
     }),
     AppRoutingModule
   ],
-  providers: [TokenHandlerService, AuthGuardService, AuthService],
+  providers: [TokenHandlerService, AuthGuardService, AuthService, GroupService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
