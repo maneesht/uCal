@@ -1,41 +1,32 @@
 import { Injectable } from '@angular/core';
 import { Group } from '../models/group.interface';
+import {Observable} from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable()
 export class GroupService {
-  /* 
-    hard-coded list. Replace with observable:
-    groupsObservable: Observable <Group[]>; 
-  */
-  private groups: Group[] = [
-    { 
-      id: 0,
-      name: `Papa John's Official Wallyball team`,
-      members: [
-        'Maneesh Tewani',
-        'Kevin Meyer',
-        'Matthew Kramer',
-        'Ben Collier',
-        'Chris Blackwell',
-        'Hector Trevino'
-      ]
+
+  groupsObservable: Observable <string[]>;
+  
+  createHTTP(id: string) {
+    return this.http.get<Group>(`/groups/${id}`);
+  }
+  getGroups(): Observable<Group[]> {
+    return this.groupsObservable.mergeMap((groups: string[]) => {
+      let observable$: Observable<Group>[] = groups.map(group => this.createHTTP(group));
+      return Observable.forkJoin(observable$);
+    });
+  }
+  getGroup(id: string) {
+    return this.http.get<Group>(`/groups/${id}`);
+  }
+
+  saveGroup(group: Group) {
+    return this.http.post('/user/groups/', {group});
+  }
+  
+    constructor(private http: HttpClient) { 
+      this.groupsObservable = this.http.get<string[]>(`/groups/`); 
     }
-  ];
-  getGroups() {
-    return this.groups; //return observable created in constructor
-  }
-  getGroup(id: number) {
-    return this.groups.find(group => group.id === id); //return an observable with an HTTP request instead
-  }
-  /* Insert HTTP Observable to request data. DO NOT subscribe */
-  /* 
-  Example: 
-    this.groupsObservable = this.http.get(`/groups/`);
-  Don't forget to inject HTTPClient:
-    constructor(private http: HTTPClient) { }
-  ...And import HTTPClient
-    import { HTTPClient } from '@angular/common/http';
-  */
-  constructor() { }
 
 }

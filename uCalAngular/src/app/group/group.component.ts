@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GroupService } from './group.service';
+import { Group } from '../models/group.interface';
 
 @Component({
   selector: 'app-group',
@@ -8,12 +9,15 @@ import { GroupService } from './group.service';
   styleUrls: ['./group.component.css']
 })
 export class GroupComponent implements OnInit {
-  
+  groups: Group[];
   constructor(private activatedRoute: ActivatedRoute, private router: Router, private groupService: GroupService){
+    this.getGroups();
   }
 
   getGroups() {
-    return this.groupService.getGroups();
+    this.groupService.getGroups().subscribe((groups)=>{
+      this.groups = groups;
+    });
   }
 
   isDetail() {

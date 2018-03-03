@@ -10,18 +10,39 @@ import { Group } from '../models/group.interface';
 })
 export class GroupDetailComponent implements OnInit {
   group: Group;
+  newMember: string;
   constructor(private activatedRoute: ActivatedRoute, private groupService: GroupService) {
-    this.activatedRoute.params.subscribe(params => this.group = this.groupService.getGroup(+params.id));
+    this.activatedRoute.params.subscribe(params => {
+      if(params.id !== "new") { 
+        this.groupService.getGroup(params.id).subscribe((group)=>{
+          this.group = group;
+        })
+      }
+      else {
+        this.group = {
+          name: "",
+          members: [],
+          invited: [],
+          creator: "",
+          calendars: []
+        }
+      }
+    });
   }
+
+  addMember(){
+    this.group.members.push(this.newMember);
+    this.newMember = "";
+  }
+
   save() {
-    //implement code to call service and make it POST to update the group
-    /* 
-      Something like:
-        this.groupService.saveGroup(this.group); //be sure to also create this function in groupService
-    */
+    this.groupService.saveGroup(this.group);
   }
+  
   removeMember(name: string) {
     //remove person from group object locally, do NOT call save
+    let index = this.group.members.indexOf(name);
+    this.group.members.splice(index, 1);
   }
 
   ngOnInit() {

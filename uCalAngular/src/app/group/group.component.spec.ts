@@ -4,6 +4,7 @@ import { GroupComponent } from './group.component';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { GroupService } from './group.service';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('GroupComponent', () => {
   let component: GroupComponent;
@@ -14,7 +15,7 @@ describe('GroupComponent', () => {
       declarations: [ GroupComponent ],
       schemas: [NO_ERRORS_SCHEMA],
       providers: [ GroupService ],
-      imports: [RouterTestingModule]
+      imports: [HttpClientTestingModule, RouterTestingModule]
     })
     .compileComponents();
   }));

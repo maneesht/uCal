@@ -9,12 +9,13 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let group of getGroups()" [routerLink]="['detail',group.id]" routerLinkActive="table-primary">
+          <tr *ngFor="let group of groups" [routerLink]="['detail',group._id]" routerLinkActive="table-primary">
             <td>{{group.name}}</td>
             <td>{{group.members}}</td>
           </tr>
         </tbody>
       </table>
+      <a class="btn btn-primary float-right" [routerLink]="['detail','new']">+</a>
     </div>
     <div [class.col]="isDetail()">
       <router-outlet></router-outlet>

@@ -4,6 +4,7 @@ import { GroupDetailComponent } from './group-detail.component';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { GroupService } from '../group/group.service';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('GroupDetailComponent', () => {
   let component: GroupDetailComponent;
@@ -13,7 +14,7 @@ describe('GroupDetailComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ GroupDetailComponent ],
       schemas: [NO_ERRORS_SCHEMA],
-      imports: [RouterTestingModule],
+      imports: [HttpClientTestingModule, RouterTestingModule],
       providers: [GroupService]
     })
     .compileComponents();

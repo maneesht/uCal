@@ -11,7 +11,9 @@
           {{member}}
           <button class="btn btn-sm btn-danger float-right" (click)="removeMember(member)">x</button>
         </li>
-      </ul>
+        <input class="form-control" [(ngModel)]="newMember">
+        <button class="btn btn-primary float-right" (click)="addMember()">Add Member</button>
+      </ul>   
       <button class="btn btn-success float-right" (click)="save()">Save</button>
     </div>
   </div>

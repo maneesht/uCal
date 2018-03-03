@@ -31,7 +31,7 @@ eventRouter.post('/events/create', verifyToken, (req, res) => {
      event.save().then((calendar) => {
         
      Calendar.findByIdAndUpdate(event.calendar,  
-        {$push: {events: event}},
+        {$push: {events: event}}
         ).then((user) => {
             return res.status(200).send(event);   
         }).catch(() => {

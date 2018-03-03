@@ -5,6 +5,7 @@ var UEvent = require('../models/event').UEvent;
 let express = require('express');
 const _ = require('lodash');
 const q = require('q');
+const verifyToken = require('../token-handler').verifyToken;
 let groupRouter = express.Router();
 
 groupRouter.patch('/user/:userId/groups/:groupID/accept', (req, res) => {
@@ -112,6 +113,31 @@ groupRouter.post('/user/:userID/groups', (req, res) => {
         return res.status(400).send("Failed to create group");
     });
 });
+groupRouter.post('/user/groups', verifyToken, (req, res) => {
+    //Create a new Group
+    var userID = req.decoded.userId._id;
+    var groupinfo = _.pick(req.body, ['group']).group;
+    var group = new Group({
+        name: groupinfo.name,
+        creator: userID,
+        invited: groupinfo.invited || [],
+        members: group.members
+    });
+
+	//TODO add the group to the creator's groups
+
+    group.save().then((group) => {
+        console.log('id', group._id);
+        User.findByIdAndUpdate(userID, {$push: {groups: group._id}}).then(data => console.log(data));
+        for (var x = 0; x < group.invited.length; x ++) {
+            //TODO: check status
+            User.findByIdAndUpdate(group.invited[x], {$push: {groupinvites: group._id}});
+        };
+        return res.status(200).send(group);
+    }).catch(() => {
+        return res.status(400).send("Failed to create group");
+    });
+});
 
 groupRouter.delete('/users/:userID/groups/:groupID', (req, res) => {
     Group.findOne({
@@ -139,8 +165,9 @@ groupRouter.delete('/groups/:groupId', (req, res) => {
 });
 
 groupRouter.get('/groups/:groupId', (req, res) => {
-    Group.findById(req.params.groupID).then((group) => {
+    Group.findById(req.params.groupId).then((group) => {
         var data = {
+            _id: group._id,
             name: group.name,
             creator: {},
             invited: [],
@@ -193,5 +220,22 @@ groupRouter.get('/groups/:groupId', (req, res) => {
     }).catch(() => {
         return res.status(400).send("Group not Found");
     })
+});
+
+groupRouter.get('/groups', verifyToken, (req, res) => {
+    let userID = req.decoded.userId._id;
+    User.findById(userID).then((user) => {
+        return res.status(200).send(user.groups);
+    }).catch(() => {
+        return res.status(404).send("User not Found");
+    });
+});
+
+groupRouter.get('/group/:groupID', (req, res) => {
+    Group.findById(req.params.groupID).then((group) => {
+        return res.status(200).send(group);
+    }).catch(() => {
+        return res.status(404).send("Group not found");
+    });
 });
 module.exports = groupRouter;

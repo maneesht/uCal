@@ -1,5 +1,8 @@
 export interface Group {
-  id: number;
+  _id?: string;
   name: string;
+  calendars: string[];
+  creator: string;
+  invited: string[];
   members: string[];
 }
