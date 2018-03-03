@@ -9,11 +9,20 @@ let express = require('express');
 let friendRouter = express.Router();
 friendRouter.post('/users/:userID/friends/:friendID', (req, res) => {
     //Create a friend request from userID to friendID
-    User.findByIdAndUpdate(req.params.friendID, {$addToSet: {friendRequests: req.params.userID}}).then((users) => {
-        return res.status(200).send("Friend request sent");
+    User.findById(req.params.friendID).then((users) => {
+        if (users == null) throw "NotFound";
+        for (let x = 0; x < users.friends.length; x++) {
+            if (users.friends[x] == req.params.userID) {
+                return res.status(400).send("Already friends");
+            };
+        };
+        User.findByIdAndUpdate(req.params.friendID, {$addToSet : {friendRequests: req.params.userID}}).then(() =>{
+            return res.status(200).send("Friend request sent");
+        }).catch(() => {
+            return res.status(400).send("Failed to send friend request")
+        });
     }).catch(() => {
-        console.error(err);
-        return res.status(400).send("Failed to send friend request")
+        return res.status(404).send("User not Found")
     });
 });
 
@@ -26,7 +35,7 @@ friendRouter.delete('/users/:userID/friends/:friendID', (req, res) => {
             return res.status(400).send("Some Error with friendRouter");
         });
     }).catch((err) => {
-        return res.status(400).send("Some Error hfriendRouterened");
+        return res.status(400).send("Some Error friendRouter");
     });
 });
 
@@ -40,7 +49,7 @@ friendRouter.patch('/users/:userID/friends/:friendID', (req, res) => {
 
     if (accept) {
         User.findByIdAndUpdate(req.params.userID, { $push: { friends: req.params.friendID }, $pull: { friendRequests: req.params.friendID } }, { new: true }).then((user) => {
-            User.findByIdAndUpdate(req.params.userID, { $push: { friends: user._id } }).then((friend) => {
+            User.findByIdAndUpdate(req.params.friendID, { $push: { friends: user._id } }).then((friend) => {
                 return res.status(200).send("Friend Request Accepted");
             }).catch((err) => {
                 console.error(err);
@@ -57,5 +66,23 @@ friendRouter.patch('/users/:userID/friends/:friendID', (req, res) => {
             return res.status(404).send("No friend request exists between these users")
         });
     };
+});
+
+friendRouter.get('/users/:userID/pending-friends', (req, res) => {
+    User.findById(req.params.userID).then((user) => {
+        if (user == null)
+            throw "NotFound"
+        return res.status(200).send(user.friendRequests);
+    }).catch(() => {
+        return res.status(404).send("User not found");
+    });
+});
+
+friendRouter.get('/users/:userID/friends', (req, res) => {
+    User.findById(req.params.userID).then((user) => {
+        return res.status(200).send(user.friends);
+    }).catch(() => {
+        return res.status(404).send("User not found");
+    });
 });
 module.exports = friendRouter;
