@@ -90,7 +90,27 @@ groupRouter.patch('/groups/:groupID/invite', (req, res) => {
         return res.status(400).send("Failed to invite users to group");
     })
 });
+groupRouter.post('/user/groups', (req, res) => {
+    let userID = req.decoded.userId._id;
+    var groupinfo = _.pick(req.body, ['group']).group;
+    var group = new Group({
+        name: groupinfo.name,
+        creator: userID,
+        invited: groupinfo.invited || [],
+        members: [req.params.userID]
+    });
 
+	//TODO add the group to the creator's groups
+
+    group.save().then((group) => {
+        for (var x = 0; x < group.invited.length; x ++) {
+            User.findByIdAndUpdate(group.invited[x], {$push: {groupinvites: group._id}});
+        };
+        return res.status(200).send(group);
+    }).catch(() => {
+        return res.status(400).send("Failed to create group");
+    });
+});
 
 groupRouter.post('/user/:userID/groups', (req, res) => {
     //Create a new Group

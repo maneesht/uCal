@@ -15,7 +15,7 @@ var q = require('q');
 let userRouter = express.Router();
 userRouter.post('/signup', (req, res, next) => {
     passport.authenticate('local-signup', function (err, user, info) {
-        if (err) { return next(err); }
+        if (err) { return res.status(500).send(err); }
         if (!user) { return res.status(500).send(info); }
         req.logIn(user, function (err) {
             if (err) { return next(err); }

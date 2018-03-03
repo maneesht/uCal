@@ -25,6 +25,8 @@ import { SettingsComponent } from './settings/settings.component';
 import { HoverEventDirective } from './calendar/directives/hover-event.directive';
 import { GroupDetailComponent } from './group-detail/group-detail.component';
 import { GroupService } from './group/group.service';
+import { tokenGetter } from './token-handler/token-getter';
+import { CalendarComponentStub } from './login-success/calendar.component.stub';
 
 
 @NgModule({
@@ -32,6 +34,7 @@ import { GroupService } from './group/group.service';
     AppComponent,
     NavBarComponent,
     CalendarComponent,
+    CalendarComponentStub,
     LoginComponent,
     GroupComponent,
     LoginSuccessComponent,
@@ -50,9 +53,7 @@ import { GroupService } from './group/group.service';
     HttpClientModule,
     JwtModule.forRoot({
       config: {
-        tokenGetter: () =>{
-          return localStorage.getItem('token')
-        },
+        tokenGetter: tokenGetter,
         headerName: 'x-access-token',
         whitelistedDomains: ['localhost:3000', 'localhost:4200']
       }

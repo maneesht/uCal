@@ -1,0 +1,19 @@
+{
+  "name": "ucal-root",
+  "version": "1.0.0",
+  "description": "Root package.json for UCal",
+  "scripts": {
+    "start": "cd ./server;  npm run deploy",
+    "postinstall": "cd uCalAngular; npm i; npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maneesht/ucal.git"
+  },
+  "author": "Maneesh Tewani <maneesh.tewani@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/maneesht/ucal/issues"
+  },
+  "homepage": "https://github.com/maneesht/ucal#readme"
+}

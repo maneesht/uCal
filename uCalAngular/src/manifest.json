@@ -1,0 +1,33 @@
+{
+    "name": "UCal",
+    "short_name": "UCal",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#fff",
+    "description": "An easy to use calendar application built with a MEAN stack",
+    "icons": [{
+      "src": "/assets/icons/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/icons/android-chrome-256x256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+        "src": "/assets/icons/favicon-32x32.png",
+        "sizes": "32x32",
+        "type": "image/png"
+    },
+    {
+        "src": "/assets/icons/favicon-16x16.png",
+        "sizes": "16x16",
+        "type": "image/png"
+    },
+    {
+        "src": "/assets/icons/mstile-150x150.png",
+        "sizes": "150x150",
+        "type": "image/png"
+    }]
+  }

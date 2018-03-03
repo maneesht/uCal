@@ -5,7 +5,8 @@
   "main": "",
   "scripts": {
     "start": "node server.js",
-    "test": "mocha test/*.test.js"
+    "test": "mocha test/*.test.js",
+    "deploy": "npm install ; npm start"
   },
   "engines": {
     "node": "8.1.4"

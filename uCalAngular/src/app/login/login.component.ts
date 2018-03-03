@@ -11,6 +11,7 @@ import { TokenHandlerService } from '../token-handler/token-handler.service';
 })
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
+  err: string;
   constructor(private fb: FormBuilder, private http: HttpClient, private router: Router, private tokenHandler: TokenHandlerService) {
     this.createForm();
   }
@@ -31,7 +32,7 @@ export class LoginComponent implements OnInit {
       .subscribe((obj: any) => {
         this.tokenHandler.setToken(obj.token);
         this.router.navigate(['/calendar']);
-      }, err => console.log(err));
+      }, err => this.err = err.error);
   }
 
   register() {
@@ -45,7 +46,7 @@ export class LoginComponent implements OnInit {
       .subscribe((obj: any) => {
         this.tokenHandler.setToken(obj.token);
         this.router.navigate(['/calendar']);
-      }, err => console.log(err));
+      }, err => this.err = err.error);
   }
   ngOnInit() {
   }
