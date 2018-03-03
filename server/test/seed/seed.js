@@ -27,11 +27,15 @@ const users = [{
     ]
 }, {
     _id: userTwoId,
-    email: 'steve@example.com',
+    email: 'steve@example.edu',
     password: 'UserPassTwo',
     groups: [
         groupTwoId
-    ]
+    ],
+    calendars: [{
+        calendarId: calendarTwoId,
+        edit: true
+    }]
 }];
 
 const calendars = [{
@@ -92,17 +96,20 @@ const events = [{
     rsvp: { activated: false }
 }];
 
+
+
+
+
 const groups = [{
     _id: groupOneId,
     name: "Test Group 1",
-    creator: userOneId,
+    owner: userOneId,
     members: [userOneId]
 }, {
     _id: groupTwoId,
     name: "Test Group 2",
-    creator: userTwoId,
-    members: [userTwoId],
-    invited: [userOneId]
+    owner: userTwoId,
+    members: [userTwoId]
 }];
 
 const populateUsers = (done) => {

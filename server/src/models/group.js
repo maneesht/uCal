@@ -6,7 +6,7 @@ var GroupSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  creator: mongoose.Schema.Types.ObjectId,
+  owner: mongoose.Schema.Types.ObjectId,
   invited: [mongoose.Schema.Types.ObjectId],
   members: [mongoose.Schema.Types.ObjectId],
   calendars: [mongoose.Schema.Types.ObjectId]

@@ -7,7 +7,7 @@ var { User } = require('./../src/models/user');
 var { Calendar } = require('./../src/models/calendar');
 var { Group } = require('./../src/models/group');
 var { UEvent } = require('./../src/models/event');
-const { users, calendars, populateUsers, populateEvents, populateCalendars, populateGroups } = require('./seed/seed');
+const { users, groups, calendars, populateUsers, populateEvents, populateCalendars, populateGroups } = require('./seed/seed');
 require("supertest").agent(app.listen());
 
 beforeEach(populateUsers);
@@ -16,7 +16,7 @@ beforeEach(populateEvents);
 beforeEach(populateGroups);
 
 
-describe.skip('CALENDAR TESTS', () => {
+describe('CALENDAR TESTS', () => {
 //test creating a calendar for a user
 describe('POST /users/:userID/calendars', () => {
     //add a calendar in a normal way
@@ -39,20 +39,77 @@ describe('POST /users/:userID/calendars', () => {
             .expect((res) => {
                 expect(res.body.name).toBe(name);
                 expect(res.body.description).toBe(description);
+                expect(res.body.owner).toEqual(users[0]._id);
+                expect(res.body.users[0]).toBe(users[0]._id.toHexString());
+            })
+            .end(done);
+    });
+
+    it('should create calendar with no description', (done) => {
+
+        var name = "TestCalNoDescription"
+        var calendar = {
+            calendar: {
+                name
+            }
+        }
+
+        request(app)
+            .post(`/users/${users[0]._id}/calendars`)
+            .send(calendar)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.name).toBe(name);
                 expect(res.body.owner).toBe(users[0]._id.toHexString());
                 expect(res.body.users[0]).toBe(users[0]._id.toHexString());
-                //also group is?
-                //also events is?
                 //check that the calendar was added to the user's list of calendars
             })
             .end(done);
     });
 
-    //TODO add a calendar without description
+    it('should fail to create a calendar for the user, no name', (done) => {
 
-    //TODO add a calendar without name
+        var name; //= "TestCal"
+        var description = "description BRO"
 
-    //TODO add a calendar without a calendar object in the body
+        var calendar = {
+            calendar: {
+                name,
+                description
+            }
+        }
+
+        request(app)
+            .post(`/users/${users[0]._id}/calendars`)
+            .send(calendar)
+            .expect(400)
+            .expect((res) => {
+                expect(res.text).toBe('No name value was given');
+            })
+            .end(done);
+    });
+
+    it('should fail to create a calendar, no calendar in body', (done) => {
+
+        var name = "TestCal"
+        var description = "description BRO"
+
+        var calendar = {
+            calendar: {
+                name,
+                description
+            }
+        }
+
+        request(app)
+            .post(`/users/${users[0]._id}/calendars`)
+            .send()
+            .expect(400)
+            .expect((res) => {
+                expect(res.text).toBe('No calendar data was supplied');
+            })
+            .end(done);
+    });
 
     //TODO add a calendar with an invalid userID
 
@@ -62,14 +119,119 @@ describe('POST /users/:userID/calendars', () => {
 //test creating a calendar for a group
 describe('POST /groups/:groupID/calendars', () => {
     //TODO add a calendar normally
+    it('should create a calendar for the group', (done) => {
 
-    //TODO add a calendar without description
+        var name = "TestCalGroup"
+        var description = "description BRO"
 
-    //TODO add a calendar without name
+        var calendar = {
+            calendar: {
+                name,
+                description
+            }
+        }
 
-    //TODO add a calendar without a calendar object in the body
+        request(app)
+            .post(`/groups/${groups[0]._id}/calendars`)
+            .send(calendar)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.name).toBe(name);
+                expect(res.body.description).toBe(description);
+                expect(res.body.owner).toEqual(groups[0].owner.toHexString());
+            })
+            .end(done);
+    });
 
-    //TODO add a calendar with an invalid groupID
+    it('should create calendar with no description', (done) => {
+
+        var name = "TestCalNoDescription"
+        var calendar = {
+            calendar: {
+                name
+            }
+        }
+
+        request(app)
+            .post(`/groups/${groups[0]._id}/calendars`)
+            .send(calendar)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.name).toBe(name);
+                expect(res.body.owner).toBe(users[0]._id.toHexString());
+                expect(res.body.users[0]).toBe(users[0]._id.toHexString());
+                //check that the calendar was added to the user's list of calendars
+            })
+            .end(done);
+    });
+
+    it('should fail to create a calendar for the user, no name', (done) => {
+
+        var name; //= "TestCal"
+        var description = "description BRO"
+
+        var calendar = {
+            calendar: {
+                name,
+                description
+            }
+        }
+
+        request(app)
+            .post(`/groups/${groups[0]._id}/calendars`)
+            .send(calendar)
+            .expect(400)
+            .expect((res) => {
+                expect(res.text).toBe('No name value was given');
+            })
+            .end(done);
+    });
+
+    it('should fail to create a calendar, no calendar in body', (done) => {
+
+        var name = "TestCal"
+        var description = "description BRO"
+
+        var calendar = {
+            calendar: {
+                name,
+                description
+            }
+        }
+
+        request(app)
+            .post(`/groups/${groups[0]._id}/calendars`)
+            .send()
+            .expect(400)
+            .expect((res) => {
+                expect(res.text).toBe('No calendar data was supplied');
+            })
+            .end(done);
+    });
+
+    it('should fail to create a calendar, group not found', (done) => {
+
+        var name = "TestCal"
+        var description = "description BRO"
+
+        var calendar = {
+            calendar: {
+                name,
+                description
+            }
+        }
+
+        var id = ObjectID(000);
+
+        request(app)
+            .post(`/groups/${id}/calendars`)
+            .send(calendar)
+            .expect(404)
+            .expect((res) => {
+                expect(res.text).toBe('Group not Found');
+            })
+            .end(done);
+    });
 });
 
 
@@ -78,9 +240,10 @@ describe('DELETE /calendars/:calendarID', () => {
     //delete a calendar in a normal way
     it('should delete a calendar', (done) => {
         request(app)
-            .delete(`/calendars/${calendars[0]._id}`)
+            .delete(`/calendars/${calendars[1]._id}`)
             .expect(200)
             .expect((res) => {
+                //console.log(res.text);
                 expect(res.body).toExist;
             })
             .end(done);
@@ -88,8 +251,7 @@ describe('DELETE /calendars/:calendarID', () => {
     });
 
     //try to delete a calendar that doesn't exist
-    //delete a calendar in a normal way
-    it('should fail to delete a calendar', (done) => {
+    it('should fail to delete a calendar invalid id', (done) => {
         request(app)
             .delete(`/calendars/12456`)
             .expect(400)
@@ -99,7 +261,6 @@ describe('DELETE /calendars/:calendarID', () => {
             })
             .end(done);
     });
-
 });
 
 
@@ -121,9 +282,16 @@ describe('GET /calendars/:calendarID', () => {
             .end(done);
     });
 
-    //TODO get a group calendar in a normal way
-
-    //TODO try to get a calendar that doesn't exist
+    it('should fail to get calendar, invalid id', (done) => {
+        var id = ObjectID(000);
+        request(app)
+            .get(`/calendars/${id}`)
+            .expect(404)
+            .expect((res) => {
+                expect(res.text).toBe("Calendar not Found");
+            })
+            .end(done);
+    });
 
 });
 
@@ -131,10 +299,33 @@ describe('GET /calendars/:calendarID', () => {
 //test updating a calendar's name and/or description
 describe('PATCH /calendars/:calendarID', () => {
     //patch a calendar name and description normally
-    it('should change a calendar\'s name and description', (done) => {
+    it('should change a calendar\'s name', (done) => {
 
         var name = "changedNAME"
         var description = "description BRO"
+
+        var calendar = {
+            calendar: {
+                name,
+                description
+            }
+        }
+
+        request(app)
+            .patch(`/calendars/${calendars[0]._id}`)
+            .send(calendar)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.name).toBe(name);
+                expect(res.body.description).toBe(description);
+            })
+            .end(done);
+    });
+
+    it('should change a calendar\'s description', (done) => {
+
+        var name = "NAME"
+        var description = "updated description BRO"
 
         var calendar = {
             calendar: {
@@ -159,6 +350,30 @@ describe('PATCH /calendars/:calendarID', () => {
 
         var name = "changedNAME"
         var description = "description BRO"
+        var calendar = {
+            calendar: {
+                name,
+                description
+            }
+        }
+        request(app)
+            .patch(`/calendars/24242412`)
+            .send(calendar)
+            .expect(400)
+            .expect((res) => {
+                expect(res.text).toBe("Failed to update calendar");
+                //check that the error message is correct?
+            })
+            .end(done);
+    });
+
+   
+
+
+    it('should fail to change a calendar\'s name to \"\"', (done) => {
+
+        var name
+        var description = "description BRO"
 
         var calendar = {
             calendar: {
@@ -168,24 +383,42 @@ describe('PATCH /calendars/:calendarID', () => {
         }
 
         request(app)
-            .patch(`/calendars/24242412`)
+            .patch(`/calendars/${calendars[0]._id}`)
             .send(calendar)
             .expect(400)
             .expect((res) => {
-                expect(res.body).toExist;
-                //check that the error message is correct?
+                expect(res.text).toBe("Invalid name value given")
             })
             .end(done);
     });
 
-    //TODO change the name only normally
-
-    //TODO change the description only normally
 
     //TODO try to change a value other than name or description
+    //need to double check this test
+    
+    it('should fail to change a calendar\'s owner', (done) => {
 
-    //TODO try to change the name to ""
+        var name = "NAME"
+        var description = "description BRO"
+        var owner = new ObjectID();
+        var calendar = {
+            calendar: {
+                name,
+                description,
+                owner
+            }
+        }
 
+        request(app)
+            .patch(`/calendars/${calendars[0]._id}`)
+            .send(calendar)
+            .expect(400)
+            .expect((res) => {
+                expect(res.text).toBe("Too many values inputted")
+            })
+            .end(done);
+    });
+    
 
 });
 
@@ -212,7 +445,7 @@ describe('PATCH /calendars/:calendarID/share', () => {
     });
 
     //try to normally share the calendar with one user who can't edit
-    it('should share the calendar with a user who cant edit', (done) => {
+    it('should share the calendar with a user who can\'t edit', (done) => {
 
         var use = {
             users: [users[1]._id]

@@ -107,7 +107,6 @@ passport.use(new GoogleStrategy({
 //serializes user
 //Adds to session
 passport.serializeUser((user, done) => {
-    console.log(user);
     done(null, user._id);
 });
 //deserializes user

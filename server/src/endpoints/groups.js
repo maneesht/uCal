@@ -168,8 +168,8 @@ groupRouter.post('/user/groups', verifyToken, (req, res) => {
 	//TODO add the group to the creator's groups
 
     group.save().then((group) => {
-        console.log('id', group._id);
-        User.findByIdAndUpdate(userID, {$push: {groups: group._id}}).then(data => console.log(data));
+        //TODO: Handlle .then
+        User.findByIdAndUpdate(userID, {$push: {groups: group._id}});
         for (var x = 0; x < group.invited.length; x ++) {
             //TODO: check status
             User.findByIdAndUpdate(group.invited[x], {$push: {groupinvites: group._id}});
@@ -260,7 +260,7 @@ groupRouter.get('/groups/:groupId', (req, res) => {
                     });
                 };
             }).catch((err) => {
-                console.log(err);
+                //TODO: Handle when err
             }));
         };
         q.all(promises).then(() => {

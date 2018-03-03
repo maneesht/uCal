@@ -6,19 +6,30 @@ const _ = require('lodash');
 const express = require('express');
 const q = require('q');
 const verifyToken = require('../token-handler').verifyToken;
+const { ObjectID } = require('mongodb');
 
 const calendarRouter = express.Router();
-calendarRouter.post('/users/calendars', (req, res) => {
+calendarRouter.post('/users/:userID/calendars', (req, res) => {
     //Create a calendar for a user
     var calendarData = _.pick(req.body, ['calendar']).calendar;
-    let id = req.user.id;
-    console.log(id);
+    
+    if(typeof calendarData == "undefined") {
+        return res.status(400).send("No calendar data was supplied");
+    }    
+    
+    if(typeof calendarData.name == "undefined") {
+        return res.status(400).send("No name value was given");
+    }
+
+    var id = req.params.userID;
     var calendar = new Calendar({
         name: calendarData.name,
         description: calendarData.description || "",
         owner: id,
         users: [id]
     });
+    
+
 
     calendar.save().then((calendar) => {
         User.findByIdAndUpdate(calendar.owner, { $push: { calendars: calendar._id } }).then((user) => {
@@ -33,9 +44,22 @@ calendarRouter.post('/users/calendars', (req, res) => {
 
 calendarRouter.post('/groups/:groupID/calendars', (req, res) => {
     //Create a calendar for a group
-    var calendarDAta = _.pick(req.body, ['calendar']).calendar;
+    var calendarData = _.pick(req.body, ['calendar']).calendar;
+
+    if(typeof calendarData == "undefined") {
+        return res.status(400).send("No calendar data was supplied");
+    }    
+    
+    if(typeof calendarData.name == "undefined") {
+        return res.status(400).send("No name value was given");
+    }
 
     Group.findById(req.params.groupID).then((group) => {
+
+        if( group == null) {
+            throw "";
+        }
+
         var calendar = new Calendar({
             name: calendarData.name,
             description: calendarData.description || "",
@@ -43,7 +67,7 @@ calendarRouter.post('/groups/:groupID/calendars', (req, res) => {
             users: group.members,
 			group: req.params.groupID
         });
-        Calendar.save().then((calendar) => {
+        calendar.save().then((calendar) => {
             var promises = [];
             for (var x = 0; x < calendar.users; x++) {
                 promises.push(User.findByIdAndUpdate(calendar.users[x], { $push: { calendars: { calendarId: calendar._id, edit: true } } }).then(() => {
@@ -56,7 +80,7 @@ calendarRouter.post('/groups/:groupID/calendars', (req, res) => {
                 return res.status(200).send(calendar);
             });
         }).catch((err) => {
-            console.log(err);
+            console.error(err);
             return res.status(400).send("Failed to create group calendar");
         });
     }).catch((err) => {
@@ -67,20 +91,60 @@ calendarRouter.post('/groups/:groupID/calendars', (req, res) => {
 
 calendarRouter.delete('/calendars/:calendarID', (req, res) => {
     //delete a calendar
+   // console.log(req.params.calendarID)
     Calendar.findByIdAndRemove(req.params.calendarID).then((calendar) => {
         for (var x = 0; x < calendar.events.length; x++) {
-            UEvent.findByIdAndRemove(calendar.events[x]).catch((err) => {
-                console.error(err);
-				return res.status(400).send("error removing events from the calendar?");
-            });
+           UEvent.findByIdAndRemove(calendar.events[x]).catch((err) =>{
+                return res.status(400).send("error removing events from calendar")
+           })
         }
+        //console.log(calendar);
+        User.findById(calendar.owner).then((user) => {
+           // console.log("User: " + user)
+            var index = -1;
+            for(var i = 0; i < user.calendars.length; i++) {
+                
+                if(ObjectID(user.calendars[i].calendarId) == ObjectID(calendar._id)) {
+                    index = i;
+                    break;
+                }
+            }
+            //console.log("Calendar: " + calendar)
+            //var index = user.calendars.indexOf(ObjectID(calendar._id));
+            //var index2 = user.calendars.indexOf(calendar.calendarId)
+            //console.log(index2);
+            if (index !== -1) {
+                user.calendars.splice(index, 1);
+            } 
 
-		//TODO remove the calendar from the owner's list of calendars
+            //else if (index2 !== -1) {
+            //    user.calendars.splice(index2, 1);
+            //}
 
-		res.status(200).send(`Successfully deleted calendar ${req.params.calendarID}`);
+            User.findById((user._id))
+                .then((user) => {
+                    user.calendars.push(user);
+
+                    user.save().then((savedUser) => {
+                            return res.status(200).send("Calendar deleted");
+                        }).catch(() => {
+                            return res.status(400).send("Failed to remove calendar from user");
+                        });
+                }).catch(() => {
+                    return res.status(400).send("That user does not exist in here");
+                });
+
+        }).catch((err) => {
+            return res.status(400).send("That user does not exist");
+        });
+        		//TODO remove the calendar from the owner's list of calendars
+
+		//res.status(200).send(`Successfully deleted calendar ${req.params.calendarID}`);
+    
     }).catch((err) => {
         return res.status(400).send("Failed to delete calendar");
     })
+    
 });
 
 calendarRouter.get('/calendars/:calendarID', (req, res) => {
@@ -112,6 +176,13 @@ calendarRouter.get('/calendars/:calendarID', (req, res) => {
 calendarRouter.patch('/calendars/:calendarID', (req, res) => {
     //update calendar information (name, description)
     var updated = _.pick(req.body, ['calendar']).calendar;
+    if(typeof updated.name == "undefined") {
+        return res.status(400).send("Invalid name value given");
+    }
+    if(Object.keys(updated).length > 2) {
+        return res.status(400).send("Too many values inputted")
+    }
+
     var data = {};
     if (updated.name) {
         data['name'] = updated.name;
@@ -151,12 +222,11 @@ calendarRouter.patch('/calendars/:calendarID/share', (req, res) => {
 });
 
 calendarRouter.get('/calendars/', verifyToken, (req, res) => {
-    console.log(req.decoded);
+    //console.log(req.decoded);
     var currentUser = req.user;
     var calendars = [];
-    console.log(currentUser);
+    //console.log(currentUser);
     User.findById(currentUser._id).then((user) => {
-        console.log(user);
         for (var x = 0; x < user.calendars.length; x++) {
             calendars.concat(user.calendars[x]);
         }
