@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { User } from '../models/user.interface';
 import { Observable } from 'rxjs/Observable';
 
+import { ProfileService } from './profile.service';
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.component.html',
@@ -10,10 +11,11 @@ import { Observable } from 'rxjs/Observable';
 })
 export class SettingsComponent implements OnInit {
   user: Observable<User>;
-  constructor(private http: HttpClient) { }
+  constructor(private ps: ProfileService) {
+    this.user = this.ps.getProfile();
+  }
 
   ngOnInit() {
-    this.user = this.http.get<User>('/current-user');
   }
 
 }
