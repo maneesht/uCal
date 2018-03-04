@@ -2,14 +2,14 @@ const mongoose = require('mongoose');
 
 var UserSchema = new mongoose.Schema({
   password: {
-    type: String,
-    require: true
+    type: String
   },
   email: {
 	type: String,
     required: true,
     unique: true
   },
+  isOAuth: Boolean,
   calendars: [{
     calendarId: mongoose.Schema.Types.ObjectId,
     edit: Boolean

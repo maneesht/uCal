@@ -19,7 +19,7 @@ userRouter.post('/signup', (req, res, next) => {
         if (!user) { return res.status(500).send(info); }
         req.logIn(user, function (err) {
             if (err) { return next(err); }
-            let token = jwt.sign({ userId: user }, secretKey, {
+            let token = jwt.sign({ user }, secretKey, {
                 expiresIn: '2 days'
             });
             return res.send({ message: "Success!", token: token });
@@ -28,7 +28,7 @@ userRouter.post('/signup', (req, res, next) => {
 });
 
 userRouter.get('/current-user', verifyToken, (req, res) => {
-    let user = req.decoded.userId;
+    let user = req.decoded.user;
     res.send(user);
 });
 
@@ -106,7 +106,7 @@ passport.use('local-signup', new LocalStrategy({
 //route for finding a user by it's email
 //TODO: change to GET
 userRouter.post('/users/find', (req, res) => {
-    let email = req.decoded.userId.email;
+    let email = req.decoded.user.email;
 
     User.findByEmail(email)
         .then((user) => {
@@ -118,7 +118,7 @@ userRouter.post('/users/find', (req, res) => {
 
 //route for updating a user email
 userRouter.post('/users/email/update', verifyToken, (req, res) => {
-    let email = req.decoded.userId.email;
+    let email = req.decoded.user.email;
     var body = _.pick(req.body, ['email', 'password', 'newEmail']);
 
     User.findByCredentials(email, body.password)
@@ -142,7 +142,7 @@ userRouter.post('/users/email/update', verifyToken, (req, res) => {
 //route for updating a user password
 userRouter.post('/users/password/update', verifyToken, (req, res) => {
     var body = _.pick(req.body, [ 'password', 'newPassword']);
-    let email = req.decoded.userId.email;
+    let email = req.decoded.user.email;
 
     User.findByCredentials(email, body.password)
         .then((user) => {
@@ -164,7 +164,7 @@ userRouter.post('/users/password/update', verifyToken, (req, res) => {
 
 //route for getting a user's calendars
 userRouter.get('/users/calendars/get', verifyToken, (req, res) => {
-    let email = req.decoded.userId.email;
+    let email = req.decoded.user.email;
     User.findByEmail(email)
         .then((user) => {
             return res.status(200).send(user.calendars);
@@ -178,7 +178,7 @@ userRouter.get('/users/calendars/get', verifyToken, (req, res) => {
 //route for adding a calendar to a user
 userRouter.post('/users/calendars/add', verifyToken, (req, res) => {
     var body = _.pick(req.body, ['email', 'calendar', 'edit']);
-    let email = req.decoded.userId.email;
+    let email = req.decoded.user.email;
     User.findByEmail(body.email)
         .then((user) => {
             let calendar = {
@@ -318,7 +318,7 @@ userRouter.post('/users/groups/add', (req, res) => {
 //TODO: change to /GET
 userRouter.post('/users/friends/get', (req, res) => {
     var body = _.pick(req.body, ['email']);
-    let email = req.decoded.userId.email;
+    let email = req.decoded.user.email;
     User.findByEmail(email)
         .then((user) => {
             return res.status(200).send(user.calendars);

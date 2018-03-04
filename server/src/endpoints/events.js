@@ -14,7 +14,7 @@ let eventRouter = express.Router();
 
 eventRouter.post('/events/create', verifyToken, (req, res) => {
     var eventData = _.pick(req.body, ['name', 'date', 'allDay', 'startTime', 'endTime', 'location', 'description', 'calendar']);
-    eventData.owner = req.decoded.userId._id;
+    eventData.owner = req.decoded.user._id;
     eventData.startTime = JSON.parse(eventData.startTime);
     eventData.endTime = JSON.parse(eventData.endTime);
     eventData.location = JSON.parse(eventData.location);

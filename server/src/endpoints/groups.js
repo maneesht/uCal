@@ -91,7 +91,7 @@ groupRouter.patch('/groups/:groupID/invite', (req, res) => {
     })
 });
 groupRouter.post('/user/groups', (req, res) => {
-    let userID = req.decoded.userId._id;
+    let userID = req.decoded.user._id;
     var groupinfo = _.pick(req.body, ['group']).group;
     var group = new Group({
         name: groupinfo.name,
@@ -135,7 +135,7 @@ groupRouter.post('/user/:userID/groups', (req, res) => {
 });
 groupRouter.post('/user/groups', verifyToken, (req, res) => {
     //Create a new Group
-    var userID = req.decoded.userId._id;
+    var userID = req.decoded.user._id;
     var groupinfo = _.pick(req.body, ['group']).group;
     var group = new Group({
         name: groupinfo.name,
@@ -243,7 +243,7 @@ groupRouter.get('/groups/:groupId', (req, res) => {
 });
 
 groupRouter.get('/groups', verifyToken, (req, res) => {
-    let userID = req.decoded.userId._id;
+    let userID = req.decoded.user._id;
     User.findById(userID).then((user) => {
         return res.status(200).send(user.groups);
     }).catch(() => {

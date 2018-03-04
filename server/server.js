@@ -15,6 +15,7 @@ let GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 let LocalStrategy = require('passport-local');
 let bodyParser = require('body-parser');
 let cookieParser = require('cookie-parser');
+var Calendar = require('./src/models/calendar').Calendar;
 let session = require('express-session');
 let jwt = require('jsonwebtoken');
 let secretKey = require('./src/config/config').key;
@@ -61,15 +62,53 @@ passport.use(new GoogleStrategy({
     callbackURL: '/auth/google/callback'
 },
     (token, refreshToken, profile, done) => {
+        let email = profile.emails[0].value;
         process.nextTick(() => {
             //add code to put information in database or update db
-            done(null, profile);
-        })
+            User.findOne({ email }, function (err, user) {
+                // if there are any errors, return the error
+                if (err)
+                    return done(err);
+                //Regular Expression for finding email addresses
+                var re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+                if (!re.test(email))
+                    return done("email not a correct email format");
+                if(user) {
+                    if(user.isOAuth)
+                        return done(null, {email, _id: user._id});
+                    else
+                        return done("Email already exists");
+                }
+
+                var newUser = new User({email, isOAuth: true});
+                newUser.save()
+                    .then((user) => {
+                        //Create a new default calendar for the user as well
+                        var calendar = new Calendar({
+                            name: "Events",
+                            owner: user._id,
+                            users: [
+                                user._id
+                            ]
+                        });
+                        calendar.save().then((calendar) => {
+                            User.findByIdAndUpdate(user._id, { $push: { calendars: { _id: calendar._id, edit: true } } }, { new: true }).then((user) => {
+                                done(null, { _id: user._id, email: user.email});
+                            }).catch((err) => {
+                                done("Failed to save default calendar to user");
+                            });
+                        }).catch(() => {
+                            done("User created but default calendar creation failed.");
+                        });
+                    }, (data) => done(data));
+            });
+        });
     }))
 //serializes user
 //Adds to session
 passport.serializeUser((user, done) => {
-    done(null, user.id);
+    console.log(user);
+    done(null, user._id);
 });
 //deserializes user
 //Removes from session
@@ -85,7 +124,7 @@ app.post('/login', (req, res, next) => {
         if (!user) { return res.status(500).send(info); }
         req.logIn(user, function (err) {
             if (err) { return next(err); }
-            let token = jwt.sign({ userId: user }, secretKey, {
+            let token = jwt.sign({ user }, secretKey, {
                 expiresIn: '2 days'
             });
             return res.send({ message: "Success!", token: token });
@@ -96,7 +135,7 @@ app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'em
 app.get('/auth/google/callback', passport.authenticate('google', {
     failureRedirect: '/'
 }), (req, res) => {
-    let token = jwt.sign(req.user, secretKey, {
+    let token = jwt.sign({ user: req.user}, secretKey, {
         expiresIn: '24h'
     });
     res.redirect(`/login-success?token=${token}`);
