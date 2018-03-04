@@ -11,6 +11,7 @@ const calendarOneId = new ObjectID();
 const calendarTwoId = new ObjectID();
 const eventOneId = new ObjectID();
 const eventTwoId = new ObjectID();
+const eventThreeId = new ObjectID();
 const groupOneId = new ObjectID();
 const groupTwoId = new ObjectID();
 
@@ -50,25 +51,44 @@ const calendars = [{
 const events = [{
     _id: eventOneId,
     name: "Test Event 1",
-    date: { day: 1, month: 1, year: 2000 },
+    date: { day: 3, month: 4, year: 2018 },
     allDay: false,
-    startTime: { day: 1, month: 1, year: 2000, hour: 1, minute: 30 },
-    endTime: { day: 1, month: 1, year: 2000, hour: 2, minute: 30 },
-    location: { name: "HAAS" },
+    startTime: { day: 3, month: 4, year: 2018, hour: 1, minute: 30 },
+    endTime: { day: 3, month: 4, year: 2018, hour: 2, minute: 30 },
+    location: {
+        activated: true,
+        name: "HAAS",
+        latitude: 39.4278121,
+        longitude: -87.9169907
+    },
     description: "CS meeting",
     calendar: calendarOneId,
-    invites: []
+    rsvp: { activated: true }
 }, {
     _id: eventTwoId,
     name: "Test Event 2",
-    date: { day: 2, month: 2, year: 2222 },
+    date: { day: 12, month: 5, year: 2018 },
     allDay: false,
-    startTime: { day: 2, month: 2, year: 2222, hour: 2, minute: 00 },
-    endTime: { day: 2, month: 2, year: 2222, hour: 2, minute: 30 },
-    location: { name: "Lawson" },
+    startTime: { day: 12, month: 5, year: 2018, hour: 2, minute: 00 },
+    endTime: { day: 12, month: 5, year: 2018, hour: 6, minute: 30 },
+    location: {
+        activated: true,
+        name: "Lawson",
+        latitude: 40.4278121,
+        longitude: -86.9169907
+    },
     description: "CS meeting",
     calendar: calendarOneId,
-    invites: []
+    rsvp: { activated: false }
+}, {
+    _id: eventThreeId,
+    name: "Test Event 3",
+    date: { day: 15, month: 5, year: 2018 },
+    allDay: true,
+    location: { activated: false },
+    description: "Glorious shower",
+    calendar: calendarOneId,
+    rsvp: { activated: false }
 }];
 
 const groups = [{
@@ -107,8 +127,9 @@ const populateEvents = (done) => {
     UEvent.remove({}).then(() => {
         var eventOne = new UEvent(events[0]).save();
         var eventTwo = new UEvent(events[1]).save();
+        var eventThree = new UEvent(events[2]).save();
 
-        return Promise.all([eventOne, eventTwo]);
+        return Promise.all([eventOne, eventTwo, eventThree]);
 
     }).then(() => done());
 };

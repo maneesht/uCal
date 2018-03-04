@@ -11,7 +11,7 @@ const { users, populateUsers } = require('./seed/seed');
 require("supertest").agent(app.listen());
 beforeEach(populateUsers);
 
-describe('USER TESTS', () => {
+describe.skip('USER TESTS', () => {
 
 describe('POST /users/login', () => {
     it('should return user', (done) => {

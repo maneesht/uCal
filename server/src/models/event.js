@@ -8,9 +8,11 @@ var EventSchema = new mongoose.Schema({
   date: {
     day: Number,
     month: Number,
-    year: Number
+    year: Number,
   },
-  allDay: Boolean,
+  allDay: {
+      type: Boolean
+  },
   startTime: {
     day: Number,
     month: Number,
@@ -26,23 +28,21 @@ var EventSchema = new mongoose.Schema({
     minute: Number
   },
   location: {
+    activated: Boolean,
     name: String,
     longitude: Number,
     latitude: Number
   },
   description: String,
   owner: mongoose.Schema.Types.ObjectId,
-  calendar: mongoose.Schema.Types.ObjectId,
+  calendar: [mongoose.Schema.Types.ObjectId],
   invites: [mongoose.Schema.Types.ObjectId],
   rsvp: {
-    required: false,
+    activated: Boolean,
     accepted: [mongoose.Schema.Types.ObjectId],
-    declined: [mongoose.Schema.Types.ObjectId],
-    noResponse: [mongoose.Schema.Types.ObjectId]
+    declined: [mongoose.Schema.Types.ObjectId]
   }
 });
-
-//TODO add functions
 
 //can't name it Event cause of JS
 var UEvent = mongoose.model('events', EventSchema)

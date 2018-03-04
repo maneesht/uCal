@@ -16,7 +16,7 @@ beforeEach(populateEvents);
 beforeEach(populateGroups);
 
 
-describe('CALENDAR TESTS', () => {
+describe.skip('CALENDAR TESTS', () => {
 //test creating a calendar for a user
 describe('POST /users/:userID/calendars', () => {
     //add a calendar in a normal way

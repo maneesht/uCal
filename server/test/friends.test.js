@@ -11,6 +11,8 @@ const { users, populateUsers } = require('./seed/seed');
 require("supertest").agent(app.listen());
 beforeEach(populateUsers);
 
+describe.skip('FRIEND TESTS', () => {
+
 describe('POST /users/:userID/friends/:friendID', () => {
     it('should return a success', (done) => {
         request(app)
@@ -107,5 +109,7 @@ describe('PATCH /users/:userID/friends/:friendID', () => {
 
 describe('DELETE /users/:userID/friends/:friendID', () => {
     //TODO write tests for DELETE
+
+});
 
 });

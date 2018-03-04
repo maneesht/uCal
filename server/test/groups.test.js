@@ -15,7 +15,7 @@ beforeEach(populateCalendars);
 beforeEach(populateEvents);
 beforeEach(populateGroups);
 
-describe('GROUP TESTS', () => {
+describe.skip('GROUP TESTS', () => {
 
 //test accepting and declining a group invite
 describe('PATCH /user/:userId/groups/:groupID/accept', () => {
