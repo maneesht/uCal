@@ -27,6 +27,11 @@ userRouter.post('/signup', (req, res, next) => {
     })(req, res, next);
 });
 
+userRouter.get('/current-user', verifyToken, (req, res) => {
+    let user = req.decoded.userId;
+    res.send(user);
+});
+
 //route for creating a new user
 passport.use('local-signup', new LocalStrategy({
     // by default, local strategy uses username and password, we will override with email
