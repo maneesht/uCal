@@ -45,6 +45,6 @@ var EventSchema = new mongoose.Schema({
 });
 
 //can't name it Event cause of JS
-var UEvent = mongoose.model('events', EventSchema)
+var UEvent = mongoose.model('events', EventSchema);
 
 module.exports = { UEvent };

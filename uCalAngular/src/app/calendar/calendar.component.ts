@@ -18,6 +18,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { switchMap, concatMap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { mergeMap } from 'rxjs/operator/mergeMap';
+import { CalendarEventAction } from 'angular-calendar';
 
 interface ServerEvent {
 
@@ -99,6 +100,20 @@ export class CalendarComponent implements OnInit {
     }, (reason) => {
     });
   }
+  actions: CalendarEventAction[] = [
+    {
+    label: '<button class="btn btn-danger">X</button>',
+    onClick: ({event}: {event: CalendarEvent }): void => {
+      let index = this.events.indexOf(event);
+      this.calendarIdObservable.subscribe(calendars => {
+        this.http.request('DELETE', '/events/remove', { responseType: 'text', body: {event: event.id, calendar: calendars[0]._id} }).subscribe(() => {
+          this.events = this.events.filter(e => e !== event);
+        });
+      })
+      }
+    }
+  ];
+
   addDates(date: Date) {
     if(!date || date.toDateString() === "Invalid Date") {
       return false;
@@ -144,8 +159,6 @@ export class CalendarComponent implements OnInit {
     this.eventEndDate.setHours(+endHours[0], +endHours[1]);
     this.eventEndDate.setDate(this.eventEndDate.getDate() + 1);
     let test = new Date(this.start);
-    this.events.push({ start: this.eventStartDate, end: this.eventEndDate, title: this.eventName, color: { primary: "blue", secondary: "lightblue" } });
-    let params = new HttpParams();
     this.addEventError = '';
     if(this.eventEndDate.getTime() < this.eventStartDate.getTime()) {
       this.addEventError = 'Start Date needs to be before End Date';
@@ -153,17 +166,19 @@ export class CalendarComponent implements OnInit {
     }
     this.calendarIdObservable.subscribe(calendars => {
       let defaultCalendar = calendars[0]._id;
-      params = params
-        .set('name', this.eventName)
-        .set('date', JSON.stringify({ day: this.eventStartDate.getDate(), month: this.eventStartDate.getMonth(), year: this.eventStartDate.getFullYear() }))
-        .set('allDay', 'false')
-        .set('startTime', JSON.stringify({ hour: this.eventStartDate.getHours(), minute: this.eventStartDate.getMinutes(), year: this.eventStartDate.getFullYear(), month: this.eventStartDate.getMonth(), day: this.eventStartDate.getDate() }))
-        .set('endTime', JSON.stringify({ hour: this.eventEndDate.getHours(), minute: this.eventEndDate.getMinutes(), year: this.eventEndDate.getFullYear(), month: this.eventEndDate.getMonth(), day: this.eventEndDate.getDate() }))
-        .set('location', JSON.stringify({ location: 'Lawson' }))
-        .set('description', 'I hate the backend team')
-        .set('calendar', defaultCalendar);
-      this.http.post(`/events/create`, params).subscribe(data => console.log(data));
-      this.refresh.next();
+      let submitEvent = {name: this.eventName, 
+        date: {day: this.eventStartDate.getDate(), month: this.eventStartDate.getMonth(), year: this.eventStartDate.getFullYear() }, 
+        allDay: false,
+        startTime: {hour: this.eventStartDate.getHours(), minute: this.eventStartDate.getMinutes(), year: this.eventStartDate.getFullYear(), month: this.eventStartDate.getMonth(), day: this.eventStartDate.getDate()},
+        endTime: { hour: this.eventEndDate.getHours(), minute: this.eventEndDate.getMinutes(), year: this.eventEndDate.getFullYear(), month: this.eventEndDate.getMonth(), day: this.eventEndDate.getDate() },
+        location: {name: 'Lawson', activated: true},
+        rsvp: { activated: false },
+        description: "",
+        calendar: defaultCalendar}
+      this.http.request("POST", `/events/create`, { body: submitEvent }).subscribe(data => {
+        this.events.push({ id: data['_id'], start: this.eventStartDate, end: this.eventEndDate, title: this.eventName, color: { primary: "blue", secondary: "lightblue" }, actions: this.actions });
+        this.refresh.next();
+      });
     });
   }
   createHTTP(id) {
@@ -181,7 +196,9 @@ export class CalendarComponent implements OnInit {
       let modifiedEvents: CalendarEvent[] = events.map(event => {
         return {
           start: new Date(event.startTime.year, event.startTime.month, event.startTime.day, event.startTime.hour, event.startTime.minute),
+          id: event._id,
           title: event.name,
+          actions: this.actions,
           color: { primary: "blue", secondary: "lightblue" },
           end: new Date(event.endTime.year, event.endTime.month, event.endTime.day, event.endTime.hour, event.endTime.minute)
         }

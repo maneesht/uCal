@@ -21,19 +21,13 @@ let eventRouter = express.Router();
 *    - have to add in code to get current user's ID
 * - add verify token back in
 **************************************************************/
-eventRouter.post('/events/create', (req, res) => {
+eventRouter.post('/events/create', verifyToken, (req, res) => {
 
     //these are all of the things the user can pass
     var body = _.pick(req.body, ['name', 'date', 'allDay', 'startTime', 'endTime', 'location', 'description', 'calendar', 'rsvp']);
 
-    // eventData.owner = req.decoded.userId._id;
-    // eventData.startTime = JSON.parse(eventData.startTime);
-    // eventData.endTime = JSON.parse(eventData.endTime);
-    // eventData.location = JSON.parse(eventData.location);
-
-
     // make checks for things needed
-    if (!body.name || !body.date || body.allDay === undefined || !body.calendar || body.rsvp.activated === undefined|| body.location.activated === undefined) {
+    if (!body.name || !body.date || body.allDay === undefined || !body.calendar || body.rsvp === undefined || body.rsvp.activated === undefined || body.location === undefined || body.location.activated === undefined ) {
         return res.status(400).send("you are missing some of the required information: name, date, allDay, calendar, rsvp.activated, and location.activated");
     }
 
@@ -45,7 +39,7 @@ eventRouter.post('/events/create', (req, res) => {
     // if all day is true then you don't need start or end time, otherwise you do
     if (body.allDay === false) {
         if (!body.startTime || !body.endTime) {
-            return res.status(400).send("because the event is not all day you must supply a start and end time");
+            return res.status(400).type('text/plain').send("because the event is not all day you must supply a start and end time");
         }
         eventdata.startTime = body.startTime;
         eventdata.endTime = body.endTime;
@@ -69,7 +63,8 @@ eventRouter.post('/events/create', (req, res) => {
     }
 
     if (body.location.activated === true) {
-        if (!body.location.name || !body.location.latitude || !body.location.longitude) {
+        // if (!body.location.name || !body.location.latitude || !body.location.longitude) { //why would 
+        if(!body.location.name) {
             return res.status(400).send("because you said there is a location you must supply one");
         }
         eventdata.location = body.location;
@@ -92,7 +87,7 @@ eventRouter.post('/events/create', (req, res) => {
         eventdata.description = body.description;
     }
 
-    //TODO add verify token back and switch these two lines899999
+    //TODO add verify token back and switch these two lines
     eventdata.owner = req.decoded.user._id
 
     eventdata.calendar = body.calendar;
@@ -204,9 +199,7 @@ eventRouter.post('/events/update', (req, res) => {
 //deleting an event is removing it from a calendar because the event might belong
 //to multiple calendars
 eventRouter.delete('/events/remove', (req, res) => {
-
     var body = _.pick(req.body, ['event', 'calendar']);
-
     Calendar.findById(ObjectID(body.calendar))
         .then((calendar) => {
 
