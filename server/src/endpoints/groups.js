@@ -62,33 +62,51 @@ groupRouter.patch('/groups/:groupID/invite', (req, res) => {
     //Invite users to the group
     var invites = _.pick(req.body, ['users']).users;
 
-	//TODO make a check to see if the user already has the group in their groups, not just their invited list
-
-    Group.findByIdAndUpdate(
-		req.params.groupID,
-		{ $addToSet: { invited: { $each: invites } } },
-		{ new: true })
-		.then((group) => {
-			/* TODO this should be redesigned because you have to go to each user in the db that you are
-			*  inviting to the group and update their information which requires seperate requests and
-			*  it becomes difficult to send responses because you won't know for sure if everything
-			*  successful
-			*/
-	        for (i = 0; i < invites.length; i++) {
-	            User.findByIdAndUpdate(
-					invites[i],
-					{ $addToSet: { groupinvites: req.params.groupID } })
-					.then((user) => {
-						console.log(`group added to ${user.email}\'s invites`);
-					}).catch((err) => {
-						return res.status(400).send(`Failed to add the group to ${invites[i]}\'s groups`  + err)
-					});
-	        };
-			res.status(200).send();
-    }).catch((err) => {
-		console.log(err);
-        return res.status(400).send("Failed to invite users to group");
-    })
+    //TODO make a check to see if the user already has the group in their groups, not just their invited list
+    Group.findById(req.params.groupID).then((group) => {
+        //Remove people in the group from the list of people to invite
+        let members = [];
+        let invited = [];
+        for (let x = 0; x < group.members.length; x++) {
+            let index = invites.indexOf(group.members[x].toString());
+            if (index > -1) {
+                members.push(invites[index]);
+                invites.splice(index, 1);
+            };
+        };
+        //Don't re-invite people
+        for (let x = 0; x < group.invited.length; x++) {
+            let index = invites.indexOf(group.invited[x].toString());
+            if (index > -1) {
+                invited.push(invites[index]);
+                invites.splice(index, 1);
+            };
+        };
+        //Invite the remaining people
+        var success = [];
+        var failed = [];
+        let promises = [];
+        for (i = 0; i < invites.length; i++) {
+            let temp = invites[i];
+            promises.push(User.findByIdAndUpdate(
+                temp,
+                { $addToSet: { groupinvites: req.params.groupID } })
+                .then((user) => {
+                    success.push(user._id);
+                }).catch((err) => {
+                    failed.push(temp);
+                }));
+        };
+        q.allSettled(promises).then(() => {
+            Group.findByIdAndUpdate(req.params.groupID, {$addToSet: { invited: {$each: success}}}).then(() => {
+                return res.status(200).send({successfully_invited: success, failed_invitations: failed, already_members: members, already_invited: invited});
+            }).catch(() => {
+                return res.status(400).send("Failed to add invites to group, but invites were sent to users");
+            });
+        });
+    }).catch(() => {
+        return res.status(404).send("Group not Found");
+    });
 });
 groupRouter.post('/user/groups', (req, res) => {
     let userID = req.decoded.user._id;
@@ -115,23 +133,26 @@ groupRouter.post('/user/groups', (req, res) => {
 groupRouter.post('/user/:userID/groups', (req, res) => {
     //Create a new Group
     var groupinfo = _.pick(req.body, ['group']).group;
-    var group = new Group({
-        name: groupinfo.name,
-        creator: req.params.userID,
-        invited: groupinfo.invited || [],
-        members: [req.params.userID]
-    });
-
-	//TODO add the group to the creator's groups
-
-    group.save().then((group) => {
-        for (var x = 0; x < group.invited.length; x ++) {
-            User.findByIdAndUpdate(group.invited[x], {$push: {groupinvites: group._id}});
-        };
-        return res.status(200).send(group);
+    if (groupinfo.name == undefined || groupinfo.name == '') {
+        return res.status(400).send('Name must be specified and non-empty')
+    }
+    User.findById(req.params.userID).then((user) => {
+        var group = new Group({
+            name: groupinfo.name,
+            creator: user._id,
+            members: [user._id]
+        });
+        
+        group.save().then((group) => {
+            User.findOneAndUpdate({_id: user._id}, {$push: {groups: group._id}});
+            return res.status(200).send(group);
+        }).catch(() => {
+            return res.status(400).send("Failed to create group");
+        });
     }).catch(() => {
-        return res.status(400).send("Failed to create group");
+        return res.status(404).send("User not found");
     });
+
 });
 groupRouter.post('/user/groups', verifyToken, (req, res) => {
     //Create a new Group
@@ -160,11 +181,18 @@ groupRouter.post('/user/groups', verifyToken, (req, res) => {
 });
 
 groupRouter.delete('/users/:userID/groups/:groupID', (req, res) => {
-    Group.findOne({
-        _id: req.params.groupID,
-        $elemMatch: { members: req.params.userID }
-    }).then((group) => {
-        if (group.owner.equals(req.params.userID)) {
+    //remove a user from a group
+    Group.findById(req.params.groupID).then((group) => {
+        let temp = false;
+        for (let x = 0; x < group.members.length; x++) {
+            if (group.members[x].toString() == req.params.userID){
+                temp = true;
+                break;
+            };
+        };
+        if (temp == false)
+            return res.status(400).send("User not a member of group");
+        if (`${group.creator}` == req.params.userID) {
             return res.status(400).send("Owner of group cannot leave/be removed");
         } else {
             Group.findByIdAndUpdate(group._id, { $pull: { members: req.params.userID } }).then((group) => {
@@ -175,10 +203,11 @@ groupRouter.delete('/users/:userID/groups/:groupID', (req, res) => {
                 return res.status(400).send("Failed to remove user from group");
             });
         };
-    }).catch(() => {
+    }).catch((err) => {
         return res.status(404).send("Group not Found");
     });
 });
+
 //TODO delete a group
 groupRouter.delete('/groups/:groupId', (req, res) => {
 

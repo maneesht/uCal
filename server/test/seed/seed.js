@@ -40,7 +40,7 @@ const calendars = [{
     description: "The description!",
     owner: userOneId,
     users: users[0],
-    events: [eventOneId]
+    events: [eventOneId, eventTwoId]
 }, {
     _id: calendarTwoId,
     name: "Test Calendar 2",
@@ -101,7 +101,8 @@ const groups = [{
     _id: groupTwoId,
     name: "Test Group 2",
     creator: userTwoId,
-    members: [userTwoId]
+    members: [userTwoId],
+    invited: [userOneId]
 }];
 
 const populateUsers = (done) => {
