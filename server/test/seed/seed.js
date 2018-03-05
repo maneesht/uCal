@@ -39,7 +39,8 @@ const calendars = [{
     name: "Test Calendar 1",
     description: "The description!",
     owner: userOneId,
-    users: users[0]
+    users: users[0],
+    events: [eventOneId]
 }, {
     _id: calendarTwoId,
     name: "Test Calendar 2",
@@ -135,9 +136,9 @@ const populateEvents = (done) => {
 };
 
 const populateGroups = (done) => {
-    UEvent.remove({}).then(() => {
-        var groupOne = new UEvent(groups[0]).save();
-        var groupTwo = new UEvent(groups[1]).save();
+    Group.remove({}).then(() => {
+        var groupOne = new Group(groups[0]).save();
+        var groupTwo = new Group(groups[1]).save();
 
         return Promise.all([groupOne, groupTwo]);
 

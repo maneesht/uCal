@@ -5,7 +5,7 @@
   "main": "",
   "scripts": {
     "start": "node server.js",
-    "test": "mocha test/*.test.js",
+    "test": "mocha test/*.test.js --exit",
     "deploy": "npm install ; npm start"
   },
   "engines": {

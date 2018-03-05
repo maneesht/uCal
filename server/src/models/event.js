@@ -35,7 +35,7 @@ var EventSchema = new mongoose.Schema({
   },
   description: String,
   owner: mongoose.Schema.Types.ObjectId,
-  calendar: [mongoose.Schema.Types.ObjectId],
+  calendar: mongoose.Schema.Types.ObjectId,
   invites: [mongoose.Schema.Types.ObjectId],
   rsvp: {
     activated: Boolean,

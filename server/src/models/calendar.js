@@ -15,8 +15,6 @@ var CalendarSchema = new mongoose.Schema({
   users: [mongoose.Schema.Types.ObjectId]
 });
 
-//TODO add functions
-
 
 var Calendar = mongoose.model('calendars', CalendarSchema)
 

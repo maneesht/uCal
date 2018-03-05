@@ -87,8 +87,9 @@ eventRouter.post('/events/create', verifyToken, (req, res) => {
         eventdata.description = body.description;
     }
 
-    //TODO add verify token back and switch these two lines
+    //second line for testing event routes
     eventdata.owner = req.decoded.user._id
+    // eventdata.owner = body.owner
 
     eventdata.calendar = body.calendar;
     eventdata.invites = [];
@@ -122,9 +123,13 @@ eventRouter.post('/events/get', (req, res) => {
 
     UEvent.findById(ObjectID(body.event))
         .then((uevent) => {
+            if (uevent === null) {
+                return res.status(404).send("Event not Found");
+            }
             return res.status(200).send(uevent)
-        }).catch(() => {
-            return res.status(404).send("Event not Found");
+        }).catch((err) => {
+            console.log(err);
+            return res.status(500).send("Lookup failed");
         });
 });
 
@@ -134,8 +139,13 @@ eventRouter.post('/events/update', (req, res) => {
 
     var body = _.pick(req.body, ['id', 'name', 'date', 'allDay', 'startTime', 'endTime', 'location', 'description', 'owner', 'calendar', 'rsvp']);
 
+
     UEvent.findById(ObjectID(body.id))
         .then((uevent) => {
+            if (uevent === null) {
+                return res.status(404).send("Event not Found");
+            }
+
             if (body.name !== undefined) {
                 uevent.name = body.name;
             }
@@ -147,17 +157,17 @@ eventRouter.post('/events/update', (req, res) => {
                 uevent.allDay = body.allDay;
                 //if the event is changed to all day then adjust the start/end time accordingly
                 if (body.allDay === true) {
-                    eventdata.startTime = {
-                        day: body.date.day,
-                        month: body.date.month,
-                        year: body.date.year,
+                    body.startTime = {
+                        day: uevent.date.day,
+                        month: uevent.date.month,
+                        year: uevent.date.year,
                         hour: 0,
                         minute: 0
                     };
-                    eventdata.endTime = {
-                        day: body.date.day,
-                        month: body.date.month,
-                        year: body.date.year,
+                    body.endTime = {
+                        day: uevent.date.day,
+                        month: uevent.date.month,
+                        year: uevent.date.year,
                         hour: 23,
                         minute: 59
                     };
@@ -190,8 +200,8 @@ eventRouter.post('/events/update', (req, res) => {
                 }).catch(() => {
                     return res.status(400).send("Failed to save event");
                 });
-        }).catch(() => {
-            return res.status(404).send("Event not Found");
+        }).catch((err) => {
+            return res.status(404).send(err);
         });
 });
 
@@ -209,7 +219,7 @@ eventRouter.delete('/events/remove', (req, res) => {
                 calendar.events.splice(index, 1);
 
                 calendar.save().then((updatedCalendar) => {
-                        return res.status(200).send("Event removed from calendar");
+                        return res.status(200).send(updatedCalendar);
                     }).catch(() => {
                         return res.status(400).send("Failed to remove the event");
                     });
@@ -218,9 +228,10 @@ eventRouter.delete('/events/remove', (req, res) => {
                 calendar.events.splice(index2, 1);
 
                 calendar.save().then((updatedCalendar) => {
-                        return res.status(200).send("Event removed from calendar");
+                        return res.status(200).send(updatedCalendar);
                     }).catch(() => {
                         return res.status(400).send("Failed to remove the event");
+
                     });
             }
             else {
@@ -255,7 +266,7 @@ eventRouter.post('/events/calendar/add', (req, res) => {
                     calendar.events.push(body.event);
 
                     calendar.save().then((savedCalendar) => {
-                            return res.status(200).send("Event added to calendar");
+                            return res.status(200).send(savedCalendar);
                         }).catch(() => {
                             return res.status(400).send("Failed to add the event to the calendar");
                         });
@@ -290,7 +301,7 @@ eventRouter.post('/events/rsvp/accept', (req, res) => {
                     uevent.rsvp.accepted.push(body.user);
 
                     uevent.save().then((savedEvent) => {
-                            return res.status(200).send("RSVP accepted");
+                            return res.status(200).send(savedEvent);
                         }).catch(() => {
                             return res.status(400).send("Failed to accept the RSVP to the event");
                         });
@@ -326,7 +337,7 @@ eventRouter.post('/events/rsvp/decline', (req, res) => {
                     uevent.rsvp.declined.push(body.user);
 
                     uevent.save().then((savedEvent) => {
-                            return res.status(200).send("RSVP declined");
+                            return res.status(200).send(savedEvent);
                         }).catch(() => {
                             return res.status(400).send("Failed to decline the RSVP to the event");
                         });
