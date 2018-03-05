@@ -8,12 +8,9 @@ export class GroupService {
 
   groupsObservable: Observable <string[]>;
   
-  createHTTP(id: string) {
-    return this.http.get<Group>(`/groups/${id}`);
-  }
   getGroups(): Observable<Group[]> {
     return this.groupsObservable.mergeMap((groups: string[]) => {
-      let observable$: Observable<Group>[] = groups.map(group => this.createHTTP(group));
+      let observable$: Observable<Group>[] = groups.map(group => this.getGroup(group));
       return Observable.forkJoin(observable$);
     });
   }
@@ -25,8 +22,8 @@ export class GroupService {
     return this.http.post('/user/groups/', {group});
   }
   
-    constructor(private http: HttpClient) { 
-      this.groupsObservable = this.http.get<string[]>(`/groups/`); 
-    }
+  constructor(private http: HttpClient) { 
+    this.groupsObservable = this.http.get<string[]>(`/groups/`); 
+  }
 
 }
