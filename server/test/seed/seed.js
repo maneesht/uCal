@@ -110,7 +110,8 @@ const groups = [{
     _id: groupTwoId,
     name: "Test Group 2",
     owner: userTwoId,
-    members: [userTwoId]
+    members: [userTwoId],
+    invited: [userOneId]
 }];
 
 const populateUsers = (done) => {
