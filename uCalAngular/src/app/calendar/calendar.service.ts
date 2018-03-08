@@ -32,8 +32,4 @@ export class CalendarService {
       return Observable.forkJoin(observable$);
     }))
   }
-
-  updateEvent(submitEvent) {
-    return this.http.request("POST", '/events/update', { body: submitEvent});
-  }
 }

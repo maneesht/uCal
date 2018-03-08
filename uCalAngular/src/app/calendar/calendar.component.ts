@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {
   startOfDay,
   endOfDay,
@@ -11,7 +11,7 @@ import {
 } from 'date-fns';
 import { CalendarEvent, CalendarEventTitleFormatter } from 'angular-calendar';
 import { CustomEventTitleFormatter } from './custom-event-title-formatter.provider';
-import { NgbModal, ModalDismissReasons, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { Subject } from 'rxjs/Subject';
 import { HttpClient, HttpParams } from '@angular/common/http';
 
@@ -20,7 +20,6 @@ import { Observable } from 'rxjs';
 import { mergeMap } from 'rxjs/operator/mergeMap';
 import { CalendarEventAction } from 'angular-calendar';
 import { CalendarService } from './calendar.service';
-import { uCalendarEvent } from '../models/u-calendar-event.interface';
 
 @Component({
   selector: 'app-calendar',
@@ -35,22 +34,18 @@ import { uCalendarEvent } from '../models/u-calendar-event.interface';
 })
 
 export class CalendarComponent implements OnInit {
-  @ViewChild('content') public contentModal;
   activeDayIsOpen: boolean = false;
   eventName: string;
   defaultStartDate: string;
-  currentEventID: string;
   defaultEndDate: string;
   addEventError: string;
   startTime: string;
   endTime: string;
   calendarIdObservable: Observable<any>;
   events: CalendarEvent[] = [];
-  editFlag: boolean;
-  currentCalendar: string;
 
   refresh: Subject<any> = new Subject();
-  constructor(private modalService: NgbModal, private calendarService: CalendarService, public activeModal: NgbActiveModal) { }
+  constructor(private modalService: NgbModal, private calendarService: CalendarService) { }
   closeResult: string;
 
   open(content) {
@@ -61,7 +56,7 @@ export class CalendarComponent implements OnInit {
   actions: CalendarEventAction[] = [
     {
     label: '<button class="btn btn-danger">X</button>',
-    onClick: ({event}: {event: uCalendarEvent }): void => {
+    onClick: ({event}: {event: CalendarEvent }): void => {
       let index = this.events.indexOf(event);
       this.calendarIdObservable.subscribe(calendars => {
         this.calendarService.deleteEvent(String(event.id), calendars[0]._id).subscribe(() => {
@@ -69,19 +64,13 @@ export class CalendarComponent implements OnInit {
         });
       })
       }
-    },
-    {
-      label: '<button class="btn btn-danger">Edit</button>',
-      onClick: ({event}: {event: uCalendarEvent }): void => {
-        this.editFlag = true;
-        this.currentCalendar = event.calendarID;
-        this.currentEventID = String(event.id);
-        this.setUpDates(event.start, event.end);
-        this.modalService.open(this.contentModal);
-      }
     }
   ];
-  dateFormatter(date: Date) {
+
+  setUpDates(date: Date) {
+    if(!date || date.toDateString() === "Invalid Date") {
+      return false;
+    }
     let month: string;
     let day: string;
     let m = date.getMonth() + 1;
@@ -96,17 +85,8 @@ export class CalendarComponent implements OnInit {
     } else {
       day = d + "";
     }
-    return {month, day};
-  }
-
-  setUpDates(startDate: Date, endDate: Date) {
-    if(!startDate || startDate.toDateString() === "Invalid Date") {
-      return false;
-    }
-    let formattedStart = this.dateFormatter(startDate);
-    let formattedEnd = this.dateFormatter(endDate);
-    this.defaultStartDate = startDate.getFullYear() + "-" + formattedStart.month + "-" + formattedStart.day;
-    this.defaultEndDate = endDate.getFullYear() + "-" + formattedEnd.month + "-" + formattedEnd.day;
+    this.defaultStartDate = date.getFullYear() + "-" + month + "-" + day;
+    this.defaultEndDate = date.getFullYear() + "-" + month + "-" + day;
     return true;
   }
 
@@ -136,7 +116,7 @@ export class CalendarComponent implements OnInit {
       this.addEventError = 'Start Date needs to be before End Date';
       return false;
     }
-    this.calendarService.getCalendarIDs().subscribe(calendars => {
+    this.calendarIdObservable.subscribe(calendars => {
       let defaultCalendar = calendars[0]._id;
       let submitEvent = {
         name: this.eventName, 
@@ -147,17 +127,11 @@ export class CalendarComponent implements OnInit {
         location: {name: 'Lawson', activated: true},
         rsvp: { activated: false },
         description: "",
-        calendar: this.editFlag ? this.currentCalendar : defaultCalendar
+        calendar: defaultCalendar
       };
-      if(this.editFlag)
-        submitEvent['id'] = this.currentEventID;
-      let observable = this.editFlag ? this.calendarService.updateEvent(submitEvent) : this.calendarService.createEvent(submitEvent);
-      observable.subscribe(data => {
-        if(!this.editFlag)
-          this.events.push({ id: data['_id'], start: eventStartDate, end: eventEndDate, title: this.eventName, color: { primary: "blue", secondary: "lightblue" }, actions: this.actions });
+        this.calendarService.createEvent(submitEvent).subscribe(data => {
+        this.events.push({ id: data['_id'], start: eventStartDate, end: eventEndDate, title: this.eventName, color: { primary: "blue", secondary: "lightblue" }, actions: this.actions });
         this.refresh.next();
-        this.editFlag = false;
-        this.activeModal.close();
       }, error => this.addEventError = error);
     });
   }
@@ -168,14 +142,13 @@ export class CalendarComponent implements OnInit {
     this.calendarService.getEvents().subscribe(data => {
       let defaultCalendar = data[0];
       let events: any[] = defaultCalendar['events'];
-      let modifiedEvents: uCalendarEvent[] = events.map(event => {
+      let modifiedEvents: CalendarEvent[] = events.map(event => {
         return {
           start: new Date(event.startTime.year, event.startTime.month, event.startTime.day, event.startTime.hour, event.startTime.minute),
           id: event._id,
           title: event.name,
           actions: this.actions,
           color: { primary: "blue", secondary: "lightblue" },
-          calendarID : event.calendar,
           end: new Date(event.endTime.year, event.endTime.month, event.endTime.day, event.endTime.hour, event.endTime.minute)
         }
       });
@@ -183,7 +156,7 @@ export class CalendarComponent implements OnInit {
     });
   }
   viewDate: Date = new Date();
-  dayClicked({ date, events }: { date: Date; events: uCalendarEvent[] }): void {
+  dayClicked({ date, events }: { date: Date; events: CalendarEvent[] }): void {
     if (isSameMonth(date, this.viewDate)) {
       if (
         (isSameDay(this.viewDate, date) && this.activeDayIsOpen === true) ||
