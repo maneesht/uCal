@@ -27,7 +27,6 @@ import { GroupDetailComponent } from './group-detail/group-detail.component';
 import { GroupService } from './group/group.service';
 import { tokenGetter } from './token-handler/token-getter';
 import { CalendarComponentStub } from './login-success/calendar.component.stub';
-import { CalendarService } from './calendar/calendar.service';
 
 
 @NgModule({
@@ -61,7 +60,7 @@ import { CalendarService } from './calendar/calendar.service';
     }),
     AppRoutingModule
   ],
-  providers: [TokenHandlerService, AuthGuardService, AuthService, GroupService, CalendarService],
+  providers: [TokenHandlerService, AuthGuardService, AuthService, GroupService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
