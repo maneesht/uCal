@@ -2,7 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CalendarModule } from 'angular-calendar';
-import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { AppComponent } from './app.component';
@@ -27,6 +27,7 @@ import { GroupDetailComponent } from './group-detail/group-detail.component';
 import { GroupService } from './group/group.service';
 import { tokenGetter } from './token-handler/token-getter';
 import { CalendarComponentStub } from './login-success/calendar.component.stub';
+import { CalendarService } from './calendar/calendar.service';
 
 
 @NgModule({
@@ -60,7 +61,7 @@ import { CalendarComponentStub } from './login-success/calendar.component.stub';
     }),
     AppRoutingModule
   ],
-  providers: [TokenHandlerService, AuthGuardService, AuthService, GroupService],
+  providers: [TokenHandlerService, AuthGuardService, AuthService, GroupService, CalendarService, NgbActiveModal],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
