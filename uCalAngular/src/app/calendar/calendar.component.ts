@@ -19,49 +19,7 @@ import { switchMap, concatMap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { mergeMap } from 'rxjs/operator/mergeMap';
 import { CalendarEventAction } from 'angular-calendar';
-
-interface ServerEvent {
-
-  name: {
-    type: String,
-    required: true
-  },
-  date: {
-    day: Number,
-    month: Number,
-    year: Number
-  },
-  allDay: Boolean,
-  startTime: {
-    day: Number,
-    month: Number,
-    year: Number,
-    hour: Number,
-    minute: Number
-  },
-  endTime: {
-    day: Number,
-    month: Number,
-    year: Number,
-    hour: Number,
-    minute: Number
-  },
-  location: {
-    name: String,
-    longitude: Number,
-    latitude: Number
-  },
-  description: String,
-  owner: string,
-  calendar: string,
-  invites: string,
-  rsvp: {
-    required: false,
-    accepted: string,
-    declined: string,
-    noResponse: string,
-  }
-}
+import { CalendarService } from './calendar.service';
 
 @Component({
   selector: 'app-calendar',
@@ -75,24 +33,19 @@ interface ServerEvent {
   ]
 })
 
-
 export class CalendarComponent implements OnInit {
   activeDayIsOpen: boolean = false;
   eventName: string;
-  start: string;
-  end: string;
   defaultStartDate: string;
   defaultEndDate: string;
   addEventError: string;
-  eventStartDate: Date;
-  eventEndDate: Date;
   startTime: string;
   endTime: string;
   calendarIdObservable: Observable<any>;
   events: CalendarEvent[] = [];
 
   refresh: Subject<any> = new Subject();
-  constructor(private modalService: NgbModal, private http: HttpClient) { }
+  constructor(private modalService: NgbModal, private calendarService: CalendarService) { }
   closeResult: string;
 
   open(content) {
@@ -106,7 +59,7 @@ export class CalendarComponent implements OnInit {
     onClick: ({event}: {event: CalendarEvent }): void => {
       let index = this.events.indexOf(event);
       this.calendarIdObservable.subscribe(calendars => {
-        this.http.request('DELETE', '/events/remove', { responseType: 'text', body: {event: event.id, calendar: calendars[0]._id} }).subscribe(() => {
+        this.calendarService.deleteEvent(String(event.id), calendars[0]._id).subscribe(() => {
           this.events = this.events.filter(e => e !== event);
         });
       })
@@ -114,7 +67,7 @@ export class CalendarComponent implements OnInit {
     }
   ];
 
-  addDates(date: Date) {
+  setUpDates(date: Date) {
     if(!date || date.toDateString() === "Invalid Date") {
       return false;
     }
@@ -150,47 +103,43 @@ export class CalendarComponent implements OnInit {
   addEvent() {
     let startHours = this.startTime.split(":");
     let endHours = this.endTime.split(":");
-    this.start = this.defaultStartDate;
-    this.end = this.defaultEndDate;
-    this.eventStartDate = new Date(this.start);
-    this.eventEndDate = new Date(this.end);
-    this.eventStartDate.setHours(+startHours[0], +startHours[1]);
-    this.eventStartDate.setDate(this.eventStartDate.getDate() + 1);
-    this.eventEndDate.setHours(+endHours[0], +endHours[1]);
-    this.eventEndDate.setDate(this.eventEndDate.getDate() + 1);
-    let test = new Date(this.start);
+    let start = this.defaultStartDate;
+    let end = this.defaultEndDate;
+    let eventStartDate = new Date(start);
+    let eventEndDate = new Date(end);
+    eventStartDate.setHours(+startHours[0], +startHours[1]);
+    eventStartDate.setDate(eventStartDate.getDate() + 1);
+    eventEndDate.setHours(+endHours[0], +endHours[1]);
+    eventEndDate.setDate(eventEndDate.getDate() + 1);
     this.addEventError = '';
-    if(this.eventEndDate.getTime() < this.eventStartDate.getTime()) {
+    if(eventEndDate.getTime() < eventStartDate.getTime()) {
       this.addEventError = 'Start Date needs to be before End Date';
       return false;
     }
     this.calendarIdObservable.subscribe(calendars => {
       let defaultCalendar = calendars[0]._id;
-      let submitEvent = {name: this.eventName, 
-        date: {day: this.eventStartDate.getDate(), month: this.eventStartDate.getMonth(), year: this.eventStartDate.getFullYear() }, 
+      let submitEvent = {
+        name: this.eventName, 
+        date: {day: eventStartDate.getDate(), month: eventStartDate.getMonth(), year: eventStartDate.getFullYear() }, 
         allDay: false,
-        startTime: {hour: this.eventStartDate.getHours(), minute: this.eventStartDate.getMinutes(), year: this.eventStartDate.getFullYear(), month: this.eventStartDate.getMonth(), day: this.eventStartDate.getDate()},
-        endTime: { hour: this.eventEndDate.getHours(), minute: this.eventEndDate.getMinutes(), year: this.eventEndDate.getFullYear(), month: this.eventEndDate.getMonth(), day: this.eventEndDate.getDate() },
+        startTime: {hour: eventStartDate.getHours(), minute: eventStartDate.getMinutes(), year: eventStartDate.getFullYear(), month: eventStartDate.getMonth(), day: eventStartDate.getDate()},
+        endTime: { hour: eventEndDate.getHours(), minute: eventEndDate.getMinutes(), year: eventEndDate.getFullYear(), month: eventEndDate.getMonth(), day: eventEndDate.getDate() },
         location: {name: 'Lawson', activated: true},
         rsvp: { activated: false },
         description: "",
-        calendar: defaultCalendar}
-      this.http.request("POST", `/events/create`, { body: submitEvent }).subscribe(data => {
-        this.events.push({ id: data['_id'], start: this.eventStartDate, end: this.eventEndDate, title: this.eventName, color: { primary: "blue", secondary: "lightblue" }, actions: this.actions });
+        calendar: defaultCalendar
+      };
+        this.calendarService.createEvent(submitEvent).subscribe(data => {
+        this.events.push({ id: data['_id'], start: eventStartDate, end: eventEndDate, title: this.eventName, color: { primary: "blue", secondary: "lightblue" }, actions: this.actions });
         this.refresh.next();
-      });
+      }, error => this.addEventError = error);
     });
   }
-  createHTTP(id) {
-    return this.http.get(`/calendars/${id}`);
-  }
+  
   
   ngOnInit() {
-    this.calendarIdObservable = this.http.get('/users/calendars/get');
-    this.calendarIdObservable.mergeMap((calendar: any[]) => {
-      let observable$ = calendar.map(calendar => this.createHTTP(calendar._id));
-      return Observable.forkJoin(observable$);
-    }).subscribe(data => {
+    //this.calendarIdObservable = this.calendarService.getCalendarIDs();
+    this.calendarService.getEvents().subscribe(data => {
       let defaultCalendar = data[0];
       let events: any[] = defaultCalendar['events'];
       let modifiedEvents: CalendarEvent[] = events.map(event => {

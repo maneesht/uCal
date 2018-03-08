@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { CalendarService } from './calendar.service';
 
 describe('CalendarComponent', () => {
   let comp: CalendarComponent;
@@ -18,7 +19,8 @@ describe('CalendarComponent', () => {
       declarations: [ CalendarComponent ],
       imports: [NgbModule, CalendarModule.forRoot(), FormsModule, BrowserAnimationsModule, HttpClientTestingModule, RouterTestingModule,
         NgbModule.forRoot()],
-      schemas: [NO_ERRORS_SCHEMA]
+      schemas: [NO_ERRORS_SCHEMA], 
+      providers: [CalendarService]
     })
     .compileComponents();
   }));
@@ -71,7 +73,7 @@ describe('CalendarComponent', () => {
     fixture.detectChanges();
     const compiled = fixture.debugElement.nativeElement;
     let today = new Date("January 11, 2018 13:31:00");
-    let result = comp.addDates(today);
+    let result = comp.setUpDates(today);
     expect(result).toBe(true);
     expect(comp.defaultStartDate).toEqual("2018-01-11");
   }));
@@ -79,7 +81,7 @@ describe('CalendarComponent', () => {
     fixture.detectChanges();
     const compiled = fixture.debugElement.nativeElement;
     let today = new Date("January 11, 2018 1:31:00PM");
-    let result = comp.addDates(today);
+    let result = comp.setUpDates(today);
     expect(result).toBe(false);
     expect(comp.defaultStartDate).toEqual(undefined);
   }));
@@ -87,7 +89,7 @@ describe('CalendarComponent', () => {
     fixture.detectChanges();
     const compiled = fixture.debugElement.nativeElement;
     let today;
-    let result = comp.addDates(today);
+    let result = comp.setUpDates(today);
     expect(result).toBe(false);
     expect(comp.defaultStartDate).toEqual(undefined);
   }));

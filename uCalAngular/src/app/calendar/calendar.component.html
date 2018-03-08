@@ -60,7 +60,7 @@
         <span class="cal-day-badge" *ngIf="day.badgeTotal > 0">{{ day.badgeTotal }}</span>
         <span class="cal-day-number">{{ day.date | calendarDate:'monthViewDayNumber':locale }}</span>
       </div>
-      <button #btn class="btn btn-sm btn-outline-primary d-block mx-auto" (click)="open(content)" (click)="addDates(day.date)">Create Event</button>
+      <button #btn class="btn btn-sm btn-outline-primary d-block mx-auto" (click)="open(content)" (click)="setUpDates(day.date)">Create Event</button>
       <pre>{{closeResult}}</pre>
     </div>
   </ng-template>
