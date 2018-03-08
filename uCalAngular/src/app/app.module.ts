@@ -2,7 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CalendarModule } from 'angular-calendar';
-import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { AppComponent } from './app.component';
@@ -61,7 +61,7 @@ import { CalendarService } from './calendar/calendar.service';
     }),
     AppRoutingModule
   ],
-  providers: [TokenHandlerService, AuthGuardService, AuthService, GroupService, CalendarService],
+  providers: [TokenHandlerService, AuthGuardService, AuthService, GroupService, CalendarService, NgbActiveModal],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
