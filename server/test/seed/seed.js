@@ -6,6 +6,7 @@ var { Group } = require('./../../src/models/group');
 var { UEvent } = require('./../../src/models/event');
 let jwt = require('jsonwebtoken');
 let secretKey = require('../../src/config/config').key;
+
 const userOneId = new ObjectID();
 const userTwoId = new ObjectID();
 const calendarOneId = new ObjectID();
@@ -124,6 +125,8 @@ const populateUsers = (done) => {
         users[1].token = jwt.sign({ user: {_id: users[1]._id } }, secretKey, {
             expiresIn: '2 days'
         });
+
+        users[0].token = jwt.sign({user: {_id: users[0]._id}}, secretKey, { expiresIn: '2 days'});
 
         return Promise.all([userOne, userTwo]);
 

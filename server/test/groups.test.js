@@ -18,7 +18,7 @@ beforeEach(populateGroups);
 describe('GROUP TESTS', () => {
 
 //test accepting and declining a group invite
-describe('PATCH /user/:userId/groups/:groupID/accept', () => {
+describe('PATCH /groups/:groupID/accept', () => {
 
     //normally accept an invite to a group
     it('should accept an invite', (done) => {
@@ -26,7 +26,8 @@ describe('PATCH /user/:userId/groups/:groupID/accept', () => {
         var accept = true;
 
         request(app)
-            .patch(`/user/${users[0]._id}/groups/${groups[1]._id}/accept`)
+            .patch(`/groups/${groups[1]._id}/accept`)
+            .set('x-access-token', 'Bearer ' + users[0].token)
             .send({accept})
             .expect(200)
             .expect((res) => {
@@ -41,7 +42,8 @@ describe('PATCH /user/:userId/groups/:groupID/accept', () => {
         var accept = false;
 
         request(app)
-            .patch(`/user/${users[0]._id}/groups/${groups[1]._id}/accept`)
+            .patch(`/groups/${groups[1]._id}/accept`)
+            .set('x-access-token', 'Bearer ' + users[0].token)
             .send({accept})
             .expect(200)
             .expect((res) => {
@@ -56,7 +58,8 @@ describe('PATCH /user/:userId/groups/:groupID/accept', () => {
         var accept = true;
 
         request(app)
-            .patch(`/user/${users[0]._id}/groups/5784852/accept`)
+            .patch(`/groups/5784852/accept`)
+            .set('x-access-token', 'Bearer ' + users[0].token)
             .send({accept})
             .expect(400)
             .end(done);
@@ -68,16 +71,18 @@ describe('PATCH /user/:userId/groups/:groupID/accept', () => {
         var accept = true;
 
         request(app)
-            .patch(`/user/2424112/groups/${groups[1]._id}/accept`)
+            .patch(`/groups/${groups[1]._id}/accept`)
+            .set('x-access-token', 'Bearer ' + 'bad token')
             .send({accept})
-            .expect(400)
+            .expect(403)
             .end(done);
     });
 
     //try accepting for a group that doesn't exists
     it('should return 400 since the group does not exist', (done) => {
         request(app)
-            .patch(`/user/${users[0]._id}/groups/notagroup/accept`)
+            .patch(`/groups/notagroup/accept`)
+            .set('x-access-token', 'Bearer ' + users[0].token)
             .send({accept: true})
             .expect(400)
             .end(done);
@@ -86,7 +91,8 @@ describe('PATCH /user/:userId/groups/:groupID/accept', () => {
     //try doing something other than accepting/declining
     it('should return 400 because the accept value is not specified', (done) => {
         request(app)
-        .patch(`/user/${users[0]._id}/groups/${groups[1]._id}/accept`)
+        .patch(`/groups/${groups[1]._id}/accept`)
+        .set('x-access-token', 'Bearer ' + users[0].token)
         .send({decline: false})
         .expect(400)
         .expect((res) => {
@@ -99,7 +105,8 @@ describe('PATCH /user/:userId/groups/:groupID/accept', () => {
     //try sending something other than true or false
     it('should return 400 because the accept value is an invalid type', (done) => {
         request(app)
-        .patch(`/user/${users[0]._id}/groups/${groups[1]._id}/accept`)
+        .patch(`/groups/${groups[1]._id}/accept`)
+        .set('x-access-token', 'Bearer ' + users[0].token)
         .send({decline: "accept"})
         .expect(400)
         .expect((res) => {
@@ -210,12 +217,13 @@ describe('PATCH /groups/:groupID/invite', () => {
 });
 
 //test creating a new group
-describe('POST /user/:userID/groups', () => {
+describe('POST /groups', () => {
 
     //create a group normally
     it('should successfully create a new group and return 200', (done) => {
         request(app)
-            .post(`/user/${users[0]._id}/groups`)
+            .post(`/groups`)
+            .set('x-access-token', 'Bearer ' + users[0].token)
             .send({'group': {
                 'name': 'newGroup'
             }})
@@ -223,7 +231,7 @@ describe('POST /user/:userID/groups', () => {
             .expect((res) => {
                 expect(res.body).toExist;
                 expect(res.body.name).toEqual('newGroup');
-                expect(res.body.creator).toEqual(`${users[0]._id}`);
+                expect(res.body.owner).toEqual(`${users[0]._id}`);
             })
             .end(done);
     });
@@ -231,22 +239,20 @@ describe('POST /user/:userID/groups', () => {
     //create a group for a user that doesn't exist
     it('should return 404 and fail to create the group', (done) => { 
         request(app)
-            .post(`/user/fakeuserid/groups`)
+            .post(`/groups`)
+            .set('x-access-token', 'Bearer ' + "notauserstoken")
             .send({'group': {
                 'name': 'New Group'
             }})
-            .expect(404)
-            .expect((res) => {
-                expect(res.text).toExist;
-                expect(res.text).toEqual("User not found");
-            })
+            .expect(403)
             .end(done);
     });
 
     //try to create a group without a group name
     it('should fail to create a new group and return 400', (done) => {
         request(app)
-            .post(`/user/${users[0]._id}/groups`)
+            .post(`/groups`)
+            .set('x-access-token', 'Bearer ' + users[0].token)
             .send({'group': {
                 'no_name_here': 'notaname'
             }})
@@ -261,7 +267,8 @@ describe('POST /user/:userID/groups', () => {
     //try to create a group with a name of an empty string
     it('should fail to create a new group and return 400', (done) => {
         request(app)
-            .post(`/user/${users[0]._id}/groups`)
+            .post(`/groups`)
+            .set('x-access-token', 'Bearer ' + users[0].token)
             .send({'group': {
                 'name': ''
             }})
@@ -281,7 +288,8 @@ describe('DELETE /users/:userID/groups/:groupID', () => {
     //try to remove a user from a group normally
     it('should return 200 and remove the user from the group', (done) => {
         request(app)
-            .patch(`/user/${users[0]._id}/groups/${groups[1]._id}/accept`)
+            .patch(`/groups/${groups[1]._id}/accept`)
+            .set('x-access-token', 'Bearer ' + users[0].token)
             .send({accept: true})
             .expect(200)
             .expect((res) => {
@@ -359,7 +367,7 @@ describe('GET /group/:groupId', () => {
             .expect((res) => {
                 expect(res.body).toExist;
                 expect(res.body.members).toContain(`${users[0]._id}`);
-                expect(res.body.creator).toEqual(`${users[0]._id}`);
+                expect(res.body.owner).toEqual(`${users[0]._id}`);
             })
             .end(done);
     });

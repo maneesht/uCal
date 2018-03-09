@@ -8,7 +8,7 @@ const q = require('q');
 const verifyToken = require('../token-handler').verifyToken;
 let groupRouter = express.Router();
 
-groupRouter.patch('/user/:userId/groups/:groupID/accept', (req, res) => {
+groupRouter.patch('/groups/:groupID/accept', verifyToken, (req, res) => {
     //accept or decline a group invite
     var accept = _.pick(req.body, ['accept']).accept;
 
@@ -16,12 +16,12 @@ groupRouter.patch('/user/:userId/groups/:groupID/accept', (req, res) => {
 		//update group
         Group.findOneAndUpdate(
 			{ _id: req.params.groupID },
-			{ $addToSet: { members: req.params.userId },
-              $pull: { invited: req.params.userId } }
+			{ $addToSet: { members: req.decoded.user._id },
+              $pull: { invited: req.decoded.user._id } }
 		  ).then(() => {
 			//update user
 			User.findOneAndUpdate({
-	            _id: req.params.userId
+	            _id: req.decoded.user._id
 	        }, {
 				$addToSet: { groups: req.params.groupID },
 	            $pull: { groupinvites: req.params.groupID }
@@ -37,11 +37,11 @@ groupRouter.patch('/user/:userId/groups/:groupID/accept', (req, res) => {
 	else if (accept == false) {
         Group.findOneAndUpdate(
 			{ _id: req.params.groupID },
-			{ $pull: { invited: req.params.userId } }
+			{ $pull: { invited: req.decoded.user._id } }
 		).then(() => {
 			//update user
 			User.findOneAndUpdate({
-				_id: req.params.userId
+				_id: req.decoded.user._id
 			}, {
 				$pull: { groupinvites: req.params.groupID }
 			}).then(() => {
@@ -108,38 +108,17 @@ groupRouter.patch('/groups/:groupID/invite', (req, res) => {
         return res.status(404).send("Group not Found");
     });
 });
-groupRouter.post('/user/groups', (req, res) => {
-    let userID = req.decoded.user._id;
-    var groupinfo = _.pick(req.body, ['group']).group;
-    var group = new Group({
-        name: groupinfo.name,
-        creator: userID,
-        invited: groupinfo.invited || [],
-        members: [req.params.userID]
-    });
 
-	//TODO add the group to the creator's groups
-
-    group.save().then((group) => {
-        for (var x = 0; x < group.invited.length; x ++) {
-            User.findByIdAndUpdate(group.invited[x], {$push: {groupinvites: group._id}});
-        };
-        return res.status(200).send(group);
-    }).catch(() => {
-        return res.status(400).send("Failed to create group");
-    });
-});
-
-groupRouter.post('/user/:userID/groups', (req, res) => {
+groupRouter.post('/groups', verifyToken, (req, res) => {
     //Create a new Group
     var groupinfo = _.pick(req.body, ['group']).group;
     if (groupinfo.name == undefined || groupinfo.name == '') {
         return res.status(400).send('Name must be specified and non-empty')
     }
-    User.findById(req.params.userID).then((user) => {
+    User.findById(req.decoded.user._id).then((user) => {
         var group = new Group({
             name: groupinfo.name,
-            creator: user._id,
+            owner: user._id,
             members: [user._id]
         });
         
@@ -160,12 +139,12 @@ groupRouter.post('/user/groups', verifyToken, (req, res) => {
     var groupinfo = _.pick(req.body, ['group']).group;
     var group = new Group({
         name: groupinfo.name,
-        creator: userID,
+        owner: userID,
         invited: groupinfo.invited || [],
         members: group.members
     });
 
-	//TODO add the group to the creator's groups
+	//TODO add the group to the owner's groups
 
     group.save().then((group) => {
         //TODO: Handlle .then
@@ -192,7 +171,7 @@ groupRouter.delete('/users/:userID/groups/:groupID', (req, res) => {
         };
         if (temp == false)
             return res.status(400).send("User not a member of group");
-        if (`${group.creator}` == req.params.userID) {
+        if (`${group.owner}` == req.params.userID) {
             return res.status(400).send("Owner of group cannot leave/be removed");
         } else {
             Group.findByIdAndUpdate(group._id, { $pull: { members: req.params.userID } }).then((group) => {
@@ -211,64 +190,6 @@ groupRouter.delete('/users/:userID/groups/:groupID', (req, res) => {
 //TODO delete a group
 groupRouter.delete('/groups/:groupId', (req, res) => {
 
-});
-
-groupRouter.get('/groups/:groupId', (req, res) => {
-    Group.findById(req.params.groupId).then((group) => {
-        var data = {
-            _id: group._id,
-            name: group.name,
-            creator: {},
-            invited: [],
-            members: [],
-            calendars: []
-        };
-        var promises = []
-        for (var x = 0; x < group.invited; x++) {
-            promises.push(User.findById(group.invited[x]).then((invitedUser) => {
-                data.invited.push({
-                    email: invitedUser.email,
-                    _id: invitedUser._id
-                });
-            }).catch((err) => {
-                console.error(err)
-            }));
-        };
-        for (var x = 0; x < group.members; x++) {
-            promises.push(User.findById(group.members[x]).then((member) => {
-                data.members.push({
-                    email: member.email,
-                    _id: memeber._id
-                });
-            }).catch((err) => {
-                console.error(err);
-            }));
-        };
-        for (var x = 0; x < group.calendars; x++) {
-            promises.push(Calendar.findById(group.calendars[x]).then((calendar) => {
-                data.calendars.push({
-                    name: calendar.name,
-                    description: calendar.description,
-                    owner: calendar.owner,
-                    events: []
-                });
-                for (var y = 0; y < calendar.events.length; y++) {
-                    UEvent.findById(calendar.events[y]).then((event) => {
-                        data.calendars.events.push(event);
-                    }).catch((err) => {
-                        console.error(err);
-                    });
-                };
-            }).catch((err) => {
-                //TODO: Handle when err
-            }));
-        };
-        q.all(promises).then(() => {
-            return res.status(200).send(data);
-        })
-    }).catch(() => {
-        return res.status(400).send("Group not Found");
-    })
 });
 
 groupRouter.get('/groups', verifyToken, (req, res) => {
