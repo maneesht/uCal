@@ -74,7 +74,6 @@ friendRouter.patch('/users/friends/:friendID', verifyToken, (req, res) => {
 
 friendRouter.get('/user/pending-friends', verifyToken, (req, res) => {
     let userID = req.decoded.user._id;
-    console.log("FRIEND:", userID);
     User.findById(userID).then((user) => {
         if (user == null)
             throw "NotFound"
@@ -86,7 +85,6 @@ friendRouter.get('/user/pending-friends', verifyToken, (req, res) => {
 
 friendRouter.get('/user/get-friends', verifyToken, (req, res) => {
     let userID = req.decoded.user._id;
-    console.log("USER", userID);
     User.findById(userID).then((user) => {
         return res.status(200).send(user.friends);
     }).catch((err) => {
