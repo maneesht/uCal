@@ -4,7 +4,8 @@ var { User } = require('./../../src/models/user');
 var { Calendar } = require('./../../src/models/calendar');
 var { Group } = require('./../../src/models/group');
 var { UEvent } = require('./../../src/models/event');
-
+let jwt = require('jsonwebtoken');
+let secretKey = require('../../src/config/config').key;
 const userOneId = new ObjectID();
 const userTwoId = new ObjectID();
 const calendarOneId = new ObjectID();
@@ -116,6 +117,7 @@ const populateUsers = (done) => {
     User.remove({}).then(() => {
         var userOne = new User(users[0]).save();
         var userTwo = new User(users[1]).save();
+        users[0].token = encodeUser();
 
         return Promise.all([userOne, userTwo]);
 
@@ -153,4 +155,12 @@ const populateGroups = (done) => {
     }).then(() => done());
 };
 
-module.exports = { users, calendars, events, groups, populateUsers, populateCalendars, populateEvents, populateGroups };
+const encodeUser = () => {
+    let eliUser = users[0];
+    let token = jwt.sign({ eliUser }, secretKey, {
+        expiresIn: '2 days'
+    });
+    return token;
+}
+module.exports = { users, calendars, events, groups, populateUsers, populateCalendars, populateEvents, populateGroups, encodeUser };
+
