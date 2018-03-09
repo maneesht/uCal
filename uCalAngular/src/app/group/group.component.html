@@ -1,7 +1,7 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col">
-      <table class="table">
+      <table class="table table-responsive-md table-hover">
         <thead>
           <tr>
             <th>Group Name</th>
@@ -16,6 +16,7 @@
         </tbody>
       </table>
       <a class="btn btn-primary float-right" [routerLink]="['detail','new']">+</a>
+      <app-group-invites></app-group-invites>
     </div>
     <div [class.col]="isDetail()">
       <router-outlet></router-outlet>

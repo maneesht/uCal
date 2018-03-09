@@ -18,7 +18,6 @@ let eventRouter = express.Router();
 * - route creates empty rsvp arrays if rsvp is true
 * - route creates empty invites array
 * - route fills in owner id based on who is logged in
-*    - have to add in code to get current user's ID
 * - add verify token back in
 **************************************************************/
 eventRouter.post('/events/create', verifyToken, (req, res) => {
@@ -63,7 +62,6 @@ eventRouter.post('/events/create', verifyToken, (req, res) => {
     }
 
     if (body.location.activated === true) {
-        // if (!body.location.name || !body.location.latitude || !body.location.longitude) { //why would
         if(!body.location.name) {
             return res.status(400).send("because you said there is a location you must supply one");
         }

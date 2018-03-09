@@ -1,5 +1,17 @@
 {
   "index": "/index.html",
+  "dataGroups":
+  [
+    {
+      "name": "auth",
+      "urls": ["/auth"],
+      "cacheConfig": {
+        "maxSize": 0,
+        "maxAge": "0u",
+        "strategy": "freshness"
+      }
+    }
+  ],
   "assetGroups": [{
     "name": "app",
     "installMode": "prefetch",

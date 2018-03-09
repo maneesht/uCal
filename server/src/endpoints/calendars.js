@@ -155,7 +155,8 @@ calendarRouter.get('/calendars/:calendarID', (req, res) => {
             owner: calendar.owner,
             events: [],
 			group: calendar.group,
-			users: calendar.users
+            users: calendar.users,
+            _id: calendar._id
         };
         var promises = [];
         for (var x = 0; x < calendar.events.length; x++) {
@@ -204,7 +205,7 @@ calendarRouter.patch('/calendars/:calendarID/share', (req, res) => {
     Calendar.findByIdAndUpdate(req.params.calendarID, {$addToSet: {users: {$each: user}}}, {new: true}).then((calendar) => {
         var promises = []
         for (var x = 0; x < user.length; x++) {
-            promises.push(User.findByIdAndUpdate(user[x], {$addToSet: {calendars: {calendarId: calendar._id, edit: editable}}}).then((user) => {
+            promises.push(User.findByIdAndUpdate(user[x], {$addToSet: {calendars: {_id: calendar._id, edit: editable}}}).then((user) => {
                 //pass
             }).catch((err) => {
                 // console.error(err);

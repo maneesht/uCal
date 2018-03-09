@@ -384,4 +384,38 @@ describe('GET /group/:groupId', () => {
             .end(done);
     });
 });
+
+describe('GET /groups/invites', () => {
+    it('should return the list of groups', (done) => { 
+        request(app)
+            .get('/groups/invites')
+            .set('x-access-token', 'Bearer ' + users[0].token)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body).toExist();
+                expect(res.body).toEqual([`${groups[1]._id}`])
+            })
+            .end(done)
+    });
+
+    it('should return an empty list', (done) => {
+        request(app)
+            .get('/groups/invites')
+            .set('x-access-token', 'Bearer ' + users[1].token)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body).toExist();
+                expect(res.body).toEqual([])
+            })
+            .end(done)
+    });
+
+    it('should return 403 since the token is invalid', (done) => {
+        request(app)
+            .get('/groups/invites')
+            .set('x-access-token', 'Bearer ' + 'invalid_token')
+            .expect(403)
+            .end(done)
+    })
+})
 });

@@ -11,11 +11,16 @@ import { Group } from '../models/group.interface';
 export class GroupComponent implements OnInit {
   groups: Group[];
   constructor(private activatedRoute: ActivatedRoute, private router: Router, private groupService: GroupService){
-    this.getGroups();
+     this.groupService.changed$.subscribe(() => {
+       console.log('getting groups');
+       this.getGroups();
+     })
+     this.getGroups();
   }
 
   getGroups() {
     this.groupService.getGroups().subscribe((groups)=>{
+      console.log(groups);
       this.groups = groups;
     });
   }

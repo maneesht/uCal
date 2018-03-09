@@ -28,6 +28,8 @@ import { GroupService } from './group/group.service';
 import { tokenGetter } from './token-handler/token-getter';
 import { CalendarComponentStub } from './login-success/calendar.component.stub';
 import { CalendarService } from './calendar/calendar.service';
+import { ProfileService } from './settings/profile.service';
+import { GroupInvitesComponent } from './group-invites/group-invites.component';
 
 
 @NgModule({
@@ -41,7 +43,8 @@ import { CalendarService } from './calendar/calendar.service';
     LoginSuccessComponent,
     SettingsComponent,
     HoverEventDirective,
-    GroupDetailComponent
+    GroupDetailComponent,
+    GroupInvitesComponent
   ],
   imports: [
     BrowserModule,
@@ -61,7 +64,7 @@ import { CalendarService } from './calendar/calendar.service';
     }),
     AppRoutingModule
   ],
-  providers: [TokenHandlerService, AuthGuardService, AuthService, GroupService, CalendarService, NgbActiveModal],
+  providers: [TokenHandlerService, AuthGuardService, AuthService, GroupService, CalendarService, ProfileService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

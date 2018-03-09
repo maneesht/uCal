@@ -123,8 +123,9 @@ groupRouter.post('/groups', verifyToken, (req, res) => {
         });
         
         group.save().then((group) => {
-            User.findOneAndUpdate({_id: user._id}, {$push: {groups: group._id}});
-            return res.status(200).send(group);
+            User.findOneAndUpdate({_id: user._id}, {$push: {groups: group._id}}).then(() => {
+                return res.status(200).send(group);
+            }, (err) => console.log(err));
         }).catch(() => {
             return res.status(400).send("Failed to create group");
         });
@@ -133,31 +134,7 @@ groupRouter.post('/groups', verifyToken, (req, res) => {
     });
 
 });
-groupRouter.post('/user/groups', verifyToken, (req, res) => {
-    //Create a new Group
-    var userID = req.decoded.user._id;
-    var groupinfo = _.pick(req.body, ['group']).group;
-    var group = new Group({
-        name: groupinfo.name,
-        owner: userID,
-        invited: groupinfo.invited || [],
-        members: group.members
-    });
 
-	//TODO add the group to the owner's groups
-
-    group.save().then((group) => {
-        //TODO: Handlle .then
-        User.findByIdAndUpdate(userID, {$push: {groups: group._id}});
-        for (var x = 0; x < group.invited.length; x ++) {
-            //TODO: check status
-            User.findByIdAndUpdate(group.invited[x], {$push: {groupinvites: group._id}});
-        };
-        return res.status(200).send(group);
-    }).catch(() => {
-        return res.status(400).send("Failed to create group");
-    });
-});
 
 groupRouter.delete('/users/:userID/groups/:groupID', (req, res) => {
     //remove a user from a group
@@ -206,6 +183,14 @@ groupRouter.get('/group/:groupID', (req, res) => {
         return res.status(200).send(group);
     }).catch(() => {
         return res.status(404).send("Group not found");
+    });
+});
+
+groupRouter.get('/groups/invites', verifyToken, (req, res) => {
+    User.findById(req.decoded.user._id).then((user) => {
+        return res.status(200).send(user.groupinvites);
+    }).catch(() => {
+        return res.status(404).send("User not Found");
     });
 });
 module.exports = groupRouter;

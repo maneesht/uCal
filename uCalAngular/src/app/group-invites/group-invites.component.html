@@ -1,0 +1,22 @@
+<h3>Group Invites: </h3>
+<table class="table table-responsive-md table-hover">
+  <thead>
+    <tr>
+      <th>Group Name</th>
+      <th>Accept/Decline</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let group of groups">
+      <td>
+        {{group.name}}
+      </td>
+      <td>
+        <div>
+          <button class="btn btn-outline-primary" (click)="acceptInvite(group._id)"> Accept </button>
+          <button class="btn btn-outline-danger" (click)="declineInvite(group._id)"> Decline </button>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>

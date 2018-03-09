@@ -19,6 +19,7 @@ var UserSchema = new mongoose.Schema({
   friends: [mongoose.Schema.Types.ObjectId],
   friendRequests: [mongoose.Schema.Types.ObjectId]
 });
+UserSchema.index({email: 'text'});
 
 //finds and returns a user object with the passed username and password
 UserSchema.statics.findByCredentials = function (email, password) {

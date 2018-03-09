@@ -22,7 +22,10 @@
     </label>
   </div>
 </div>
-<div [ngSwitch]="view">
+<div class="float-right">
+  <button class="btn btn-primary" (click)="open(calendarModal)">Share</button>
+</div>
+<div [ngSwitch]="view" style="clear: both">
   <mwl-calendar-month-view *ngSwitchCase="'month'" [viewDate]="viewDate" [cellTemplate]="customCellTemplate" [events] ="events" [refresh] = "refresh" [activeDayIsOpen]="activeDayIsOpen" (dayClicked)="dayClicked($event.day)">
 </mwl-calendar-month-view>
   <mwl-calendar-day-view *ngSwitchCase="'day'" [viewDate]="viewDate" [events] ="events" [refresh] = "refresh" (dayClicked)="dayClicked($event.day)">
@@ -38,17 +41,22 @@
     </button>
   </div>
   <div class="modal-body">
-    Event name:<br>
-    <input type="text" [(ngModel)]="eventName" name="eventName"><br>
-    Start Time and Day: <br>
-    <input type="date" [(ngModel)]="defaultStartDate" name="start"><br>
-    <input type="time" [(ngModel)]="startTime" name="usr_time"><br>
-    End Time and Day: <br>
-    <input type="date" [(ngModel)]="defaultEndDate" name="end"><br>
-    <input type="time" [(ngModel)]="endTime" name="usr_time">
-    <div *ngIf="addEventError" style="color: red">{{addEventError}}</div>
-    <br><button type="button" class="btn btn-outline-dark" (click)="addEvent()">Add Event</button><br>
+    <div class="form-group">
+      <label>Event name:</label>
+      <input type="text" class="form-control" [(ngModel)]="eventName" name="eventName">
+    </div>
+    <div class="form-group">
+      <label>Start Time and Day:</label>
+      <input type="date" [(ngModel)]="defaultStartDate" name="start" class="form-control">
+      <input type="time" [(ngModel)]="startTime" name="usr_time" class="form-control">
+      <label>End Time and Day:</label>
+      <input type="date" [(ngModel)]="defaultEndDate" name="end" class="form-control">
+      <input type="time" [(ngModel)]="endTime" name="usr_time" class="form-control">
+      <div *ngIf="addEventError" style="color: red">{{addEventError}}</div>
+      <button type="button" class="btn btn-outline-primary float-right" [disabled]="!this.defaultStartDate || !this.startTime || !this.endTime || !this.defaultEndDate || !this.eventName" (click)="addEvent()">{{ editFlag ? 'Update' : 'Add Event' }} </button>
+    </div>
   </div>
+  
   <div class="modal-footer">
     <button type="button" class="btn btn-outline-dark" (click)="c('Close click')">Close</button>
   </div>
@@ -60,8 +68,36 @@
         <span class="cal-day-badge" *ngIf="day.badgeTotal > 0">{{ day.badgeTotal }}</span>
         <span class="cal-day-number">{{ day.date | calendarDate:'monthViewDayNumber':locale }}</span>
       </div>
-      <button #btn class="btn btn-sm btn-outline-primary d-block mx-auto" (click)="open(content)" (click)="addDates(day.date)">Create Event</button>
+      <button #btn class="btn btn-sm btn-outline-primary d-block mx-auto" (click)="open(content)" (click)="setUpDates(day.date, day.date)">Create Event</button>
       <pre>{{closeResult}}</pre>
     </div>
   </ng-template>
 </form>
+<ng-template #calendarModal let-c="close" let-d="dismiss">
+    <div class="modal-header">
+      <h4 class="modal-title">Modal title</h4>
+      <button type="button" class="close" aria-label="Close" (click)="d('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Calendar to Share</label>
+        <select [(ngModel)]="calendarToShare" class="form-control">
+          <option *ngFor="let calendar of (eventObservable | async)" [ngValue]="calendar._id">{{calendar.name}}</option>
+        </select>
+      </div>
+      <input name="newMember" [formControl]="newMember" class="form-control" [ngbTypeahead]="search" [inputFormatter]="formatter" [resultTemplate]="rt" (selectItem)="select($event)">
+      <ng-template #rt let-r="result" let-t="term">
+        {{r?.email}}
+      </ng-template>
+      <ul class="list-group">
+        <li *ngFor="let member of members" class="list-group-item">{{member.email}}</li>
+      </ul>
+      <button class="btn btn-primary" [disabled]="!calendarToShare || !members.length" (click)="shareCalendar()">Share</button>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-dark" (click)="c('Close click')">Close</button>
+    </div>
+  </ng-template>
+  

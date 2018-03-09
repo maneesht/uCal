@@ -2,19 +2,37 @@
   <div class="card">
     <div class="card-body">
       <div class="form-group">
-        <label>Name: </label>
-        <input class="form-control" [(ngModel)]="group.name">
+        <div *ngIf="newGroup">
+          <label>Name: </label>
+          <input class="form-control" [(ngModel)]="group.name">
+        </div>
+        <div *ngIf="!newGroup">
+          <h3>{{group.name}}</h3>
+        </div>
       </div>
-      <ul class="list-group">
+      <ul class="list-group" *ngIf="!newGroup">
         Members:
         <li class="list-group-item" *ngFor="let member of group.members">
           {{member}}
-          <button class="btn btn-sm btn-danger float-right" (click)="removeMember(member)">x</button>
+          <!-- <button class="btn btn-sm btn-danger float-right" (click)="removeMember(member)">x</button> -->
         </li>
-        <input class="form-control" [(ngModel)]="newMember">
-        <button class="btn btn-primary float-right" (click)="addMember()">Add Member</button>
-      </ul>   
-      <button class="btn btn-success float-right" (click)="save()">Save</button>
+      </ul>
+      <ul class="list-group" *ngIf="toInvite.length && !newGroup">
+        To Invite:
+        <li class="list-group-item" *ngFor="let member of toInvite">
+          {{member.email}}
+        </li>
+          <button class="btn btn-sm btn-primary float-right" (click)="inviteAll()">Invite All</button>
+      </ul>
+      <div class="form-group" *ngIf="!newGroup">
+        <label> Invite Member</label>
+        <input name="newMember" [formControl]="newMember" class="form-control" [ngbTypeahead]="search" [inputFormatter]="formatter"
+        [resultTemplate]="rt" (selectItem)="select($event)">
+      </div>
+      <ng-template #rt let-r="result" let-t="term">
+        {{r?.email}}
+      </ng-template>
+      <button *ngIf="newGroup" class="btn btn-success float-right" (click)="save()">Save</button>
     </div>
   </div>
 </div>

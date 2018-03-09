@@ -19,3 +19,6 @@ script:
   - cd ./uCalAngular
   - export CHROME_BIN=chromium-browser
   - xvfb-run -a npm run test -- --single-run --no-progress --browser=ChromeNoSandbox
+notifications:
+  email:
+    - maneesh.tewani@gmail.com

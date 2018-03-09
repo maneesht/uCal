@@ -222,6 +222,13 @@ userRouter.patch('/users/', verifyToken, (req, res) => {
         return res.status(400).send("Failed to Update Password");
     });
 });
+
+userRouter.get('/user/get-email/:userId', (req, res) => {
+    User.findById(req.params.userId).then((user) => {
+        res.send({ _id: user._id, email: user.email });
+    }).catch(err => res.status(400).send(err));
+});
+
 //ADDED TOKEN
 userRouter.get('/users',verifyToken, (req, res) => {
     //Get the users calendars, events, groups, and friends
@@ -408,6 +415,20 @@ userRouter.delete('/users', verifyToken, (req, res) => {
     }).catch(() => {
         return res.status(404).send(`User with ID ${req.params.userID} not found`);
     });
+});
+userRouter.get('/users/search/:userID', verifyToken, (req, res) => {
+    var userID = req.params.userID;
+    User
+        .find({ $text: { $search: userID}})
+        .limit(5)
+        .exec((err, results) => {
+            if(results) {
+                let updatedResults = results.map(user => ({ _id: user._id, email: user.email }));
+                res.send(updatedResults);
+            } else {
+                res.send([]);
+            }
+        });
 });
 userRouter.post('/users/find', (req, res) => {
     var body = _.pick(req.body, ['email']);
