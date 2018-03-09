@@ -112,7 +112,7 @@ userRouter.post('/users/find', verifyToken, (req, res) => {
         .then((user) => {
             return res.status(200).send(user);
         }).catch((err) => {
-            return res.status(400).send(err);
+            return res.status(400).send({text: "Could not find user"});
         });
 });
 
@@ -210,29 +210,31 @@ userRouter.post('/users/calendars/add', verifyToken, (req, res) => {
                 });
         });
 });
-
-userRouter.patch('/users/:userID', (req, res) => {
+//ADDED TOKEN
+userRouter.patch('/users/', verifyToken, (req, res) => {
     //Mainly to be used in updating a users password
     //TODO: validate that the user requesting this is the user in userID
     var newPassword = _.pick(req.body, ['password']).password;
 
-    User.findByIdAndUpdate(req.params.userID, { $set: { password: newPassword } }).then((user) => {
+    User.findByIdAndUpdate(req.decoded.user._id, { $set: { password: newPassword } }).then((user) => {
         return res.status(200).send("Password Updated Successfully");
     }).catch((err) => {
         return res.status(400).send("Failed to Update Password");
     });
 });
-
-userRouter.get('/users/:userID', (req, res) => {
+//ADDED TOKEN
+userRouter.get('/users',verifyToken, (req, res) => {
     //Get the users calendars, events, groups, and friends
     var data = {
         email: '',
-        userId: req.params.userID,
+        userId: req.decoded.user._id,
         groups: [],
         calendars: [],
         friends: []
     }
-    User.findById(req.params.userID).then((user) => {
+    //console.log(req.decoded.user._id);
+    
+    User.findById(req.decoded.user._id).then((user) => {
         var promises = [];
         data.email = user.email;
         for (var x = 0; x < user.groups.length; x++) {
@@ -277,6 +279,8 @@ userRouter.get('/users/:userID', (req, res) => {
     }).catch((err) => {
         return res.status(404).send(`User with ID ${req.params.userID} not Found`);
     });
+    
+   return res.status(404);
 });
 
 //route for getting a user's groups
@@ -349,8 +353,8 @@ userRouter.post('/users/friends/add', (req, res) => {
             return res.status(400).send(err);
         });
 });
-userRouter.delete('/users/:userID', (req, res) => {
-    User.findByIdAndRemove(req.params.userID).then((user) => {
+userRouter.delete('/users', verifyToken, (req, res) => {
+    User.findByIdAndRemove(req.decoded.user._id).then((user) => {
 
         for (var x = 0; x < user.groups.length; x++) {
             Group.findById(user.groups[x]).then((group) => {

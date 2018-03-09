@@ -161,4 +161,3 @@ const populateGroups = (done) => {
 };
 
 module.exports = { users, calendars, events, groups, populateUsers, populateCalendars, populateEvents, populateGroups};
-
