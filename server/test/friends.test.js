@@ -13,11 +13,11 @@ beforeEach(populateUsers);
 
 describe('FRIEND TESTS', () => {
 
-    describe('POST /usersfriends/:friendID', () => {
+    describe('POST /users/friends/:friendID', () => {
         it('should return a success', (done) => {
             request(app)
-                .set('x-access-token', `Bearer ${users[0]}.token`)
                 .post(`/users/friends/${users[1]._id}`)
+                .set('x-access-token', `Bearer ${users[0].token}`)
                 .expect(200)
                 .expect((res) => {
                     expect(res.text).toExist;
@@ -28,8 +28,8 @@ describe('FRIEND TESTS', () => {
 
         it('should return a 404 since the user does not exist', (done) => {
             request(app)
-                .set('x-access-token', `Bearer ${users[0]}.token`)
                 .post(`/users/friends/fakeID`)
+                .set('x-access-token', `Bearer ${users[0].token}`)
                 .expect(404)
                 .expect((res) => {
                     expect(res.text).toExist;
@@ -38,15 +38,15 @@ describe('FRIEND TESTS', () => {
                 .end(done);
         });
 
-        it('should fail since a the users are already friends', (done) => {
+        it('should fail since the users are already friends', (done) => {
             request(app)
-                .set('x-access-token', `Bearer ${users[0]}.token`)
                 .post(`/users/friends/${users[1]._id}`)
+                .set('x-access-token', `Bearer ${users[0].token}`)
                 .expect(200)
                 .end(() => {
                     request(app)
-                        .set('x-access-token', `Bearer ${users[1]}.token`)
-                        .patch(`/users/${users[1]._id}/friends/${users[0]._id}`)
+                        .patch(`/users/friends/${users[0]._id}`)
+                        .set('x-access-token', `Bearer ${users[1].token}`)
                         .send({
                             accept: true
                         })
@@ -57,7 +57,8 @@ describe('FRIEND TESTS', () => {
                         })
                         .end(() => {
                             request(app)
-                                .post(`/users/${users[0]._id}/friends/${users[1]._id}`)
+                                .post(`/users/friends/${users[1]._id}`)
+                                .set('x-access-token', `Bearer ${users[0].token}`)
                                 .expect(400)
                                 .expect((res) => {
                                     expect(res.text).toExist;
@@ -69,14 +70,16 @@ describe('FRIEND TESTS', () => {
         });
     });
 
-    describe('PATCH /users/:userID/friends/:friendID', () => {
+    describe('PATCH /users/friends/:friendID', () => {
         it('should accept the friend request', (done) => {
             request(app)
-                .post(`/users/${users[0]._id}/friends/${users[1]._id}`)
+                .post(`/users/friends/${users[1]._id}`)
+                .set('x-access-token', `Bearer ${users[0].token}`)
                 .expect(200)
                 .end(() => {
                     request(app)
-                        .patch(`/users/${users[1]._id}/friends/${users[0]._id}`)
+                        .patch(`/users/friends/${users[0]._id}`)
+                        .set('x-access-token', `Bearer ${users[1].token}`)
                         .send({
                             accept: true
                         })
@@ -91,11 +94,13 @@ describe('FRIEND TESTS', () => {
 
         it('should decline the friend request', (done) => {
             request(app)
-                .post(`/users/${users[0]._id}/friends/${users[1]._id}`)
+                .post(`/users/friends/${users[1]._id}`)
+                .set('x-access-token', `Bearer ${users[0].token}`)
                 .expect(200)
                 .end(() => {
                     request(app)
-                        .patch(`/users/${users[1]._id}/friends/${users[0]._id}`)
+                        .patch(`/users/friends/${users[0]._id}`)
+                        .set('x-access-token', `Bearer ${users[1].token}`)
                         .send({
                             accept: false
                         })
@@ -110,7 +115,8 @@ describe('FRIEND TESTS', () => {
 
         it('should fail since no friend request exists', (done) => {
             request(app)
-                .patch(`/users/${users[1]._id}/friends/${users[0]._id}`)
+                .patch(`/users/friends/${users[0]._id}`)
+                .set('x-access-token', `Bearer ${users[1].token}`)
                 .send({
                     accept: false
                 })
@@ -124,11 +130,13 @@ describe('FRIEND TESTS', () => {
 
         it('should fail since no accept/decline value is specified', (done) => {
             request(app)
-                .post(`/users/${users[0]._id}/friends/${users[1]._id}`)
+                .post(`/users/friends/${users[1]._id}`)
+                .set('x-access-token', `Bearer ${users[0].token}`)
                 .expect(200)
                 .end(() => {
                     request(app)
-                        .patch(`/users/${users[1]._id}/friends/${users[0]._id}`)
+                        .patch(`/users/friends/${users[0]._id}`)
+                        .set('x-access-token', `Bearer ${users[1].token}`)
                         .expect(400)
                         .expect((res) => {
                             expect(res.text).toExist;
@@ -139,21 +147,23 @@ describe('FRIEND TESTS', () => {
         });
     });
 
-    describe('GET /users/:userID/pending-friends', () => {
+    describe('GET /user/pending-friends', () => {
         it('should return the user who requested to be your friend', (done) => {
             request(app)
-                .post(`/users/${users[0]._id}/friends/${users[1]._id}`)
+                .post(`/users/friends/${users[1]._id}`)
+                .set('x-access-token', `Bearer ${users[0].token}`)
                 .expect(200)
                 .expect((res) => {
-                    expect(res.text).toExist;
+                    expect(res.text).toExist();
                     expect(res.text).toEqual("Friend request sent");
                 })
                 .end(() => {
                     request(app)
-                        .get(`/users/${users[1]._id}/pending-friends`)
+                        .get(`/user/pending-friends`)
+                        .set('x-access-token', `Bearer ${users[1].token}`)
                         .expect(200)
                         .expect((res) => {
-                            expect(res.body).toExist;
+                            expect(res.body).toExist();
                             expect(res.body).toEqual([`${users[0]._id}`]);
                         })
                         .end(done)
@@ -162,7 +172,8 @@ describe('FRIEND TESTS', () => {
 
         it('should return an empty array since no you have no friend requests', (done) => {
             request(app)
-                .get(`/users/${users[1]._id}/pending-friends`)
+                .get('/user/pending-friends')
+                .set('x-access-token', `Bearer ${users[1].token}`)
                 .expect(200)
                 .expect((res) => {
                     expect(res.body).toExist;
@@ -172,14 +183,16 @@ describe('FRIEND TESTS', () => {
         });
     });
 
-    describe('GET /users/:userID/friends', () => {
+    describe('GET /users/get-friends', () => {
         it('should return your friends', (done) => {
             request(app)
-                .post(`/users/${users[0]._id}/friends/${users[1]._id}`)
+                .post(`/users/friends/${users[1]._id}`)
+                .set('x-access-token', `Bearer ${users[0].token}`)
                 .expect(200)
                 .end(() => {
                     request(app)
-                        .patch(`/users/${users[1]._id}/friends/${users[0]._id}`)
+                        .patch(`/users/friends/${users[0]._id}`)
+                        .set('x-access-token', `Bearer ${users[1].token}`)
                         .send({
                             accept: true
                         })
@@ -190,7 +203,8 @@ describe('FRIEND TESTS', () => {
                         })
                         .end(() => {
                             request(app)
-                                .get(`/users/${users[1]._id}/friends`)
+                                .get(`/user/get-friends`)
+                                .set('x-access-token', `Bearer ${users[1].token}`)
                                 .expect(200)
                                 .expect((res) => {
                                     expect(res.body).toExist;
@@ -203,7 +217,8 @@ describe('FRIEND TESTS', () => {
 
         it('should return an empty array since have no friends', (done) => {
             request(app)
-                .get(`/users/${users[1]._id}/friends`)
+                .get(`/user/get-friends`)
+                .set('x-access-token', `Bearer ${users[0].token}`)
                 .expect(200)
                 .expect((res) => {
                     expect(res.body).toExist;
@@ -213,15 +228,17 @@ describe('FRIEND TESTS', () => {
         });
     });
 
-    describe('DELETE /users/:userID/friends/:friendID', () => {
+    describe('DELETE /users/friends/:friendID', () => {
         //TODO write tests for DELETE
         it('should successfully remove the friendship', (done) => {
             request(app)
-                .post(`/users/${users[0]._id}/friends/${users[1]._id}`)
+                .post(`/users/friends/${users[1]._id}`)
+                .set('x-access-token', `Bearer ${users[0].token}`)
                 .expect(200)
                 .end(() => {
                     request(app)
-                        .patch(`/users/${users[1]._id}/friends/${users[0]._id}`)
+                        .patch(`/users/friends/${users[0]._id}`)
+                        .set('x-access-token', `Bearer ${users[1].token}`)
                         .send({
                             accept: true
                         })
@@ -232,7 +249,8 @@ describe('FRIEND TESTS', () => {
                         })
                         .end(() => {
                             request(app)
-                                .delete(`/users/${users[0]._id}/friends/${users[1]._id}`)
+                                .delete(`/users/friends/${users[1]._id}`)
+                                .set('x-access-token', `Bearer ${users[0].token}`)
                                 .expect(200)
                                 .expect((res) => {
                                     expect(res.text).toExist;
@@ -247,7 +265,8 @@ describe('FRIEND TESTS', () => {
             //This is a bit strange but if you are trying to delete a friendship and there is no
             //friendship already it technically completed sucessfully if it did nothing
             request(app)
-                .delete(`/users/${users[0]._id}/friends/${users[1]._id}`)
+                .delete(`/users/friends/${users[1]._id}`)
+                .set('x-access-token', `Bearer ${users[0].token}`)
                 .expect(200)
                 .expect((res) => {
                     expect(res.text).toExist;
