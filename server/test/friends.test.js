@@ -13,10 +13,11 @@ beforeEach(populateUsers);
 
 describe('FRIEND TESTS', () => {
 
-    describe('POST /users/:userID/friends/:friendID', () => {
+    describe('POST /usersfriends/:friendID', () => {
         it('should return a success', (done) => {
             request(app)
-                .post(`/users/${users[0]._id}/friends/${users[1]._id}`)
+                .set('x-access-token', `Bearer ${users[0]}.token`)
+                .post(`/users/friends/${users[1]._id}`)
                 .expect(200)
                 .expect((res) => {
                     expect(res.text).toExist;
@@ -27,7 +28,8 @@ describe('FRIEND TESTS', () => {
 
         it('should return a 404 since the user does not exist', (done) => {
             request(app)
-                .post(`/users/${users[0]._id}/friends/fakeID`)
+                .set('x-access-token', `Bearer ${users[0]}.token`)
+                .post(`/users/friends/fakeID`)
                 .expect(404)
                 .expect((res) => {
                     expect(res.text).toExist;
@@ -38,10 +40,12 @@ describe('FRIEND TESTS', () => {
 
         it('should fail since a the users are already friends', (done) => {
             request(app)
-                .post(`/users/${users[0]._id}/friends/${users[1]._id}`)
+                .set('x-access-token', `Bearer ${users[0]}.token`)
+                .post(`/users/friends/${users[1]._id}`)
                 .expect(200)
                 .end(() => {
                     request(app)
+                        .set('x-access-token', `Bearer ${users[1]}.token`)
                         .patch(`/users/${users[1]._id}/friends/${users[0]._id}`)
                         .send({
                             accept: true

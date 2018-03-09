@@ -117,7 +117,12 @@ const populateUsers = (done) => {
     User.remove({}).then(() => {
         var userOne = new User(users[0]).save();
         var userTwo = new User(users[1]).save();
-        users[0].token = encodeUser();
+        users[0].token = jwt.sign({ user: userOne }, secretKey, {
+            expiresIn: '2 days'
+        });
+        users[1].token = jwt.sign({ user: userTwo }, secretKey, {
+            expiresIn: '2 days'
+        });
 
         return Promise.all([userOne, userTwo]);
 
@@ -155,12 +160,5 @@ const populateGroups = (done) => {
     }).then(() => done());
 };
 
-const encodeUser = () => {
-    let eliUser = users[0];
-    let token = jwt.sign({ eliUser }, secretKey, {
-        expiresIn: '2 days'
-    });
-    return token;
-}
 module.exports = { users, calendars, events, groups, populateUsers, populateCalendars, populateEvents, populateGroups, encodeUser };
 
