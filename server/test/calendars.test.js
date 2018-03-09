@@ -34,6 +34,7 @@ describe('POST /users/:userID/calendars', () => {
 
         request(app)
             .post(`/users/${users[0]._id}/calendars`)
+            .set('x-access-token', 'Bearer ' + users[0].token)
             .send(calendar)
             .expect(200)
             .expect((res) => {
@@ -56,6 +57,7 @@ describe('POST /users/:userID/calendars', () => {
 
         request(app)
             .post(`/users/${users[0]._id}/calendars`)
+            .set('x-access-token', 'Bearer ' + users[0].token)
             .send(calendar)
             .expect(200)
             .expect((res) => {
@@ -81,6 +83,7 @@ describe('POST /users/:userID/calendars', () => {
 
         request(app)
             .post(`/users/${users[0]._id}/calendars`)
+            .set('x-access-token', 'Bearer ' + users[0].token)
             .send(calendar)
             .expect(400)
             .expect((res) => {
@@ -103,6 +106,7 @@ describe('POST /users/:userID/calendars', () => {
 
         request(app)
             .post(`/users/${users[0]._id}/calendars`)
+            .set('x-access-token', 'Bearer ' + users[0].token)
             .send()
             .expect(400)
             .expect((res) => {
@@ -367,7 +371,7 @@ describe('PATCH /calendars/:calendarID', () => {
             .end(done);
     });
 
-   
+
 
 
     it('should fail to change a calendar\'s name to \"\"', (done) => {
@@ -395,7 +399,7 @@ describe('PATCH /calendars/:calendarID', () => {
 
     //TODO try to change a value other than name or description
     //need to double check this test
-    
+
     it('should fail to change a calendar\'s owner', (done) => {
 
         var name = "NAME"
@@ -418,7 +422,7 @@ describe('PATCH /calendars/:calendarID', () => {
             })
             .end(done);
     });
-    
+
 
 });
 

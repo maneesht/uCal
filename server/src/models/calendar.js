@@ -13,6 +13,9 @@ var CalendarSchema = new mongoose.Schema({
     required: false
   },
   users: [mongoose.Schema.Types.ObjectId]
+},
+{
+  usePushEach: true
 });
 
 

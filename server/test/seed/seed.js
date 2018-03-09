@@ -119,14 +119,12 @@ const populateUsers = (done) => {
     User.remove({}).then(() => {
         var userOne = new User(users[0]).save();
         var userTwo = new User(users[1]).save();
-        users[0].token = jwt.sign({ user: {_id: users[0]._id} }, secretKey, {
+        users[0].token = jwt.sign({ user: { _id: users[0]._id } }, secretKey, {
             expiresIn: '2 days'
         });
-        users[1].token = jwt.sign({ user: {_id: users[1]._id } }, secretKey, {
+        users[1].token = jwt.sign({ user: { _id: users[1]._id } }, secretKey, {
             expiresIn: '2 days'
         });
-
-        users[0].token = jwt.sign({user: {_id: users[0]._id}}, secretKey, { expiresIn: '2 days'});
 
         return Promise.all([userOne, userTwo]);
 
@@ -164,4 +162,4 @@ const populateGroups = (done) => {
     }).then(() => done());
 };
 
-module.exports = { users, calendars, events, groups, populateUsers, populateCalendars, populateEvents, populateGroups};
+module.exports = { users, calendars, events, groups, populateUsers, populateCalendars, populateEvents, populateGroups };

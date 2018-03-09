@@ -42,6 +42,9 @@ var EventSchema = new mongoose.Schema({
     accepted: [mongoose.Schema.Types.ObjectId],
     declined: [mongoose.Schema.Types.ObjectId]
   }
+},
+{
+  usePushEach: true
 });
 
 //can't name it Event cause of JS

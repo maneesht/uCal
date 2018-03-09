@@ -9,26 +9,26 @@ const verifyToken = require('../token-handler').verifyToken;
 const { ObjectID } = require('mongodb');
 
 const calendarRouter = express.Router();
-calendarRouter.post('/users/:userID/calendars', (req, res) => {
+calendarRouter.post('/users/:userID/calendars', verifyToken, (req, res) => {
     //Create a calendar for a user
     var calendarData = _.pick(req.body, ['calendar']).calendar;
-    
+
     if(typeof calendarData == "undefined") {
         return res.status(400).send("No calendar data was supplied");
-    }    
-    
+    }
+
     if(typeof calendarData.name == "undefined") {
         return res.status(400).send("No name value was given");
     }
 
-    var id = req.params.userID;
+    var id = ObjectID(req.decoded.user._id);;
     var calendar = new Calendar({
         name: calendarData.name,
         description: calendarData.description || "",
         owner: id,
         users: [id]
     });
-    
+
 
 
     calendar.save().then((calendar) => {
@@ -48,8 +48,8 @@ calendarRouter.post('/groups/:groupID/calendars', (req, res) => {
 
     if(typeof calendarData == "undefined") {
         return res.status(400).send("No calendar data was supplied");
-    }    
-    
+    }
+
     if(typeof calendarData.name == "undefined") {
         return res.status(400).send("No name value was given");
     }
@@ -103,7 +103,7 @@ calendarRouter.delete('/calendars/:calendarID', (req, res) => {
            // console.log("User: " + user)
             var index = -1;
             for(var i = 0; i < user.calendars.length; i++) {
-                
+
                 if(ObjectID(user.calendars[i].calendarId) == ObjectID(calendar._id)) {
                     index = i;
                     break;
@@ -115,7 +115,7 @@ calendarRouter.delete('/calendars/:calendarID', (req, res) => {
             //console.log(index2);
             if (index !== -1) {
                 user.calendars.splice(index, 1);
-            } 
+            }
 
             //else if (index2 !== -1) {
             //    user.calendars.splice(index2, 1);
@@ -140,11 +140,11 @@ calendarRouter.delete('/calendars/:calendarID', (req, res) => {
         		//TODO remove the calendar from the owner's list of calendars
 
 		//res.status(200).send(`Successfully deleted calendar ${req.params.calendarID}`);
-    
+
     }).catch((err) => {
         return res.status(400).send("Failed to delete calendar");
     })
-    
+
 });
 
 calendarRouter.get('/calendars/:calendarID', (req, res) => {
@@ -226,7 +226,7 @@ calendarRouter.get('/calendars/', verifyToken, (req, res) => {
     var currentUser = req.user;
     var calendars = [];
     //console.log(currentUser);
-    User.findById(currentUser._id).then((user) => {
+    User.findById(req.decoded.user._id).then((user) => {
         for (var x = 0; x < user.calendars.length; x++) {
             calendars.concat(user.calendars[x]);
         }

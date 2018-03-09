@@ -45,6 +45,7 @@ describe('POST /events/create', () => {
 
 		request(app)
 			.post('/events/create')
+            .set('x-access-token', 'Bearer ' + users[0].token)
 			.send(eventData)
 			.expect(200)
 			.expect((res) => {
@@ -75,6 +76,7 @@ describe('POST /events/create', () => {
 
         request(app)
             .post('/events/create')
+            .set('x-access-token', 'Bearer ' + users[0].token)
             .send(eventData)
             .expect(400)
             .end(done);
@@ -102,6 +104,7 @@ describe('POST /events/create', () => {
 
 		request(app)
 			.post('/events/create')
+            .set('x-access-token', 'Bearer ' + users[0].token)
 			.send(eventData)
 			.expect(400)
 			.end(done);
@@ -129,6 +132,7 @@ describe('POST /events/create', () => {
 
 		request(app)
 			.post('/events/create')
+            .set('x-access-token', 'Bearer ' + users[0].token)
 			.send(eventData)
 			.expect(400)
 			.end(done);
@@ -156,6 +160,7 @@ describe('POST /events/create', () => {
 
 		request(app)
 			.post('/events/create')
+            .set('x-access-token', 'Bearer ' + users[0].token)
 			.send(eventData)
 			.expect(400)
 			.end(done);
@@ -183,6 +188,7 @@ describe('POST /events/create', () => {
 
 		request(app)
 			.post('/events/create')
+            .set('x-access-token', 'Bearer ' + users[0].token)
 			.send(eventData)
 			.expect(400)
 			.end(done);
@@ -208,6 +214,7 @@ describe('POST /events/create', () => {
 
 		request(app)
 			.post('/events/create')
+            .set('x-access-token', 'Bearer ' + users[0].token)
 			.send(eventData)
 			.expect(400)
 			.end(done);
@@ -236,6 +243,7 @@ describe('POST /events/create', () => {
 
         request(app)
             .post('/events/create')
+            .set('x-access-token', 'Bearer ' + users[0].token)
             .send(eventData)
             .expect(400)
             .end(done);

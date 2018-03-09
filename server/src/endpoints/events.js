@@ -63,7 +63,7 @@ eventRouter.post('/events/create', verifyToken, (req, res) => {
     }
 
     if (body.location.activated === true) {
-        // if (!body.location.name || !body.location.latitude || !body.location.longitude) { //why would 
+        // if (!body.location.name || !body.location.latitude || !body.location.longitude) { //why would
         if(!body.location.name) {
             return res.status(400).send("because you said there is a location you must supply one");
         }
@@ -87,9 +87,7 @@ eventRouter.post('/events/create', verifyToken, (req, res) => {
         eventdata.description = body.description;
     }
 
-    //second line for testing event routes
-    eventdata.owner = req.decoded.user._id
-    // eventdata.owner = body.owner
+    eventdata.owner = ObjectID(req.decoded.user._id);
 
     eventdata.calendar = body.calendar;
     eventdata.invites = [];
@@ -266,7 +264,7 @@ eventRouter.post('/events/calendar/add', (req, res) => {
 
                     calendar.save().then((savedCalendar) => {
                             return res.status(200).send(savedCalendar);
-                        }).catch(() => {
+                        }).catch((err) => {
                             return res.status(400).send("Failed to add the event to the calendar");
                         });
                 }).catch(() => {
