@@ -119,8 +119,8 @@ passport.deserializeUser((id, done) => {
 
 app.post('/login', (req, res, next) => {
     passport.authenticate('local', function (err, user, info) {
-        if (err) { return res.status(500).send(err); }
-        if (!user) { return res.status(500).send(info); }
+        if (err) { return res.status(401).send(err); }
+        if (!user) { return res.status(401).send(info); }
         req.logIn(user, function (err) {
             if (err) { return next(err); }
             let token = jwt.sign({ user }, secretKey, {

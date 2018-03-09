@@ -1,5 +1,5 @@
 var User = require('../models/user').User;
-var Group = require('../models/group');
+var Group = require('../models/group').Group;
 
 var Calendar = require('../models/calendar').Calendar;
 var UEvent = require('../models/event').UEvent;
@@ -15,8 +15,8 @@ var q = require('q');
 let userRouter = express.Router();
 userRouter.post('/signup', (req, res, next) => {
     passport.authenticate('local-signup', function (err, user, info) {
-        if (err) { return res.status(500).send(err); }
-        if (!user) { return res.status(500).send(info); }
+        if (err) { return res.status(401).send(err); }
+        if (!user) { return res.status(401).send(info); }
         req.logIn(user, function (err) {
             if (err) { return next(err); }
             let token = jwt.sign({ user }, secretKey, {
@@ -105,7 +105,7 @@ passport.use('local-signup', new LocalStrategy({
 
 //route for finding a user by it's email
 //TODO: change to GET
-userRouter.post('/users/find', (req, res) => {
+userRouter.post('/users/find', verifyToken, (req, res) => {
     let email = req.decoded.user.email;
 
     User.findByEmail(email)
@@ -241,7 +241,7 @@ userRouter.get('/users/:userID', (req, res) => {
             }).catch(() => {
                 return res.status(400).send("A error occurred while processing request.");
             }));
-        };
+        }
         for (var x = 0; x < user.calendars.length; x++) {
             promises.push(Calendar.findById(user.calendars[x]).then((calendar) => {
                 data.calendars.push({
@@ -274,7 +274,7 @@ userRouter.get('/users/:userID', (req, res) => {
         q.all(promises).then(() => {
             return res.status(200).send(data);
         });
-    }).catch(() => {
+    }).catch((err) => {
         return res.status(404).send(`User with ID ${req.params.userID} not Found`);
     });
 });

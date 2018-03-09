@@ -11,7 +11,7 @@ const { users, populateUsers } = require('./seed/seed');
 require("supertest").agent(app.listen());
 beforeEach(populateUsers);
 
-describe.skip('USER TESTS', () => {
+describe('USER TESTS', () => {
 
 describe('POST /users/login', () => {
     it('should return user', (done) => {
@@ -23,9 +23,9 @@ describe('POST /users/login', () => {
             .send({email, password})
             .expect(200)
             .expect((res) => {
-                expect(res.body).toExist;
+                expect(res.body).toExist();
                 expect(res.body.message).toEqual("Success!");
-                expect(res.body.token).toExist;
+                expect(res.body.token).toExist();
             })
             .end(done);
     });
@@ -37,75 +37,75 @@ describe('POST /users/login', () => {
         request(app)
             .post('/login')
             .send({email, password})
-            .expect(404)
+            .expect(401)
             .expect((res) => {
-                expect(res.body).toExist;
+                expect(res.body).toExist();
             })
             .end(done);
     });
 });
 
-describe('POST /users/create', () => {
+describe('POST /signup', () => {
 
     it('should return user', (done) => {
         var email = "newemail@example.com";
         var password = 'password';
 
         request(app)
-            .post('/users/create')
+            .post('/signup')
             .send({
                 email: email,
                 password: password
             })
             .expect(200)
             .expect((res) => {
-                expect(res.body).toExist;
-                expect(res.body).toContainKeys(['email']);
-                expect(res.body.email).toEqual(email);
+                expect(res.body).toExist();
+                expect(res.body).toContainKeys(['token']);
+                expect(res.body.message).toEqual('Success!');
             })
             .end(done);
     });
 
-    it('should return 400 because the user already exists', (done) => {
+    it('should return 401 because the user already exists', (done) => {
         request(app)
-            .post('/users/create')
+            .post('/signup')
             .send({
                 email: users[0].email,
                 password: users[0].password
             })
-            .expect(400)
+            .expect(401)
             .expect((res) => {
-                expect(res.text).toExist;
+                expect(res.text).toExist();
                 expect(res.text).toEqual("Account already exists for: " + users[0].email);
             })
             .end(done);
     });
 
-    it('should return 400 because the email is improperly formatted', (done) => {
+    it('should return 401 because the email is improperly formatted', (done) => {
         request(app)
-            .post('/users/create')
+            .post('/signup')
             .send({
                 email: "email",
                 password: "password"
             })
-            .expect(400)
+            .expect(401)
             .expect((res) => {
-                expect(res.text).toExist;
+                expect(res.text).toExist();
                 expect(res.text).toEqual("email not a correct email format");
             })
             .end(done);
     });
 
-    it('should return 400 because the request does not contain all information necessary', (done) => {
+    it('should return 401 because the request does not contain all information necessary', (done) => {
         request(app)
-            .post('/users/create')
+            .post('/signup')
             .send({
                 email: "email@example.com"
             })
-            .expect(400)
+            .expect(401)
             .expect((res) => {
-                expect(res.text).toExist;
-                expect(res.text).toEqual("Required Fields Unspecified");
+                expect(res.body.message).toExist();
+                expect(res.body.message).toEqual('Missing credentials');
             })
             .end(done);
     });
@@ -127,7 +127,7 @@ describe('PATCH /users/:userID', () => {
                     .send({password: "newPass"})
                     .expect(200)
                     .expect((res) => {
-                        expect(res.text).toExist;
+                        expect(res.text).toExist();
                         expect(res.text).toEqual("Password Updated Successfully");
                     })
                     .end(() => {
@@ -136,9 +136,9 @@ describe('PATCH /users/:userID', () => {
                             .send({email: users[0].email, password: "newPass"})
                             .expect(200)
                             .expect((res) => {
-                                expect(res.body._id).toBe(users[0]._id.toHexString());
-                                expect(res.body.email).toBe(users[0].email);
-                                expect(res.body.password).toBe("newPass");
+                                expect(res.body).toExist();
+                                expect(res.body.message).toEqual("Success!");
+                                expect(res.body.token).toExist();
                             })
                             .end(done);
                     });
@@ -147,7 +147,7 @@ describe('PATCH /users/:userID', () => {
 });
 
 describe('GET /users/:userID', () => {
-    it('should return a users information', (done) => {
+    it(`should return a user's information`, (done) => {
         var id;
         request(app)
             .post('/users/find')
@@ -163,7 +163,7 @@ describe('GET /users/:userID', () => {
                     .get('/users/' + id)
                     .expect(200)
                     .expect((res) => {
-                        expect(res.body).toExist;
+                        expect(res.body).toExist();
                         expect(res.body).toContainKeys(['email', 'userId', 'groups', 'calendars', 'friends']);
                         expect(res.body.email).toEqual(users[0].email);
                         expect(res.body.userId).toEqual(id);
