@@ -15,6 +15,9 @@ export class CalendarService {
   searchUser(id: string) {
     return this.http.get<User[]>(`/users/search/${id}`);
   }
+  searchGroup(name: string) {
+    return this.http.get<User[]>(`/groups/search/${name}`);
+  }
   getCalendarIDs() {
     return this.http.get<CalendarID[]>('/users/calendars/get');
   }

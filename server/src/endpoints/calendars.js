@@ -32,7 +32,7 @@ calendarRouter.post('/users/:userID/calendars', verifyToken, (req, res) => {
 
 
     calendar.save().then((calendar) => {
-        User.findByIdAndUpdate(calendar.owner, { $push: { calendars: calendar._id } }).then((user) => {
+        User.findByIdAndUpdate(calendar.owner, { $push: { calendars: calendar._id, edit: true } }).then((user) => {
             return res.status(200).send(calendar);
         }).catch(() => {
             return res.status(400).send("Failed to save calendar to user");
@@ -205,8 +205,14 @@ calendarRouter.patch('/calendars/:calendarID/share', (req, res) => {
     Calendar.findByIdAndUpdate(req.params.calendarID, {$addToSet: {users: {$each: user}}}, {new: true}).then((calendar) => {
         var promises = []
         for (var x = 0; x < user.length; x++) {
-            promises.push(User.findByIdAndUpdate(user[x], {$addToSet: {calendars: {_id: calendar._id, edit: editable}}}).then((user) => {
-                //pass
+            promises.push(User.findById(user[x]).then((user) => {
+                user.calendars.forEach(currCalendar => {
+                    if (_.isEqual(currCalendar._id, calendar._id)) {
+                        throw "Already has access";
+                    }
+                })
+                user.calendars.push({_id: calendar._id, edit: editable});
+                user.save();
             }).catch((err) => {
                 // console.error(err);
             }));

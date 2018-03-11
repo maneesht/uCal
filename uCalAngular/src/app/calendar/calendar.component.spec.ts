@@ -10,6 +10,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { CalendarService } from './calendar.service';
+import { GroupService } from '../group/group.service';
 
 describe('CalendarComponent', () => {
   let comp: CalendarComponent;
@@ -20,7 +21,7 @@ describe('CalendarComponent', () => {
       imports: [NgbModule, CalendarModule.forRoot(), FormsModule, ReactiveFormsModule, BrowserAnimationsModule, HttpClientTestingModule, RouterTestingModule,
         NgbModule.forRoot()],
       schemas: [NO_ERRORS_SCHEMA],
-      providers: [CalendarService, NgbActiveModal]
+      providers: [CalendarService, GroupService]
     })
     .compileComponents();
   }));

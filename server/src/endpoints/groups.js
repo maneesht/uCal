@@ -193,4 +193,18 @@ groupRouter.get('/groups/invites', verifyToken, (req, res) => {
         return res.status(404).send("User not Found");
     });
 });
+groupRouter.get('/groups/search/:groupID', verifyToken, (req, res) => {
+    var groupID = req.params.groupID;
+    Group
+        .find({ $text: { $search: groupID}})
+        .limit(5)
+        .exec((err, results) => {
+            if(results) {
+                let updatedResults = results.map(group => ({ _id: group._id, name: group.name, members: group.members }));
+                res.send(updatedResults);
+            } else {
+                res.send([]);
+            }
+        });
+});
 module.exports = groupRouter;

@@ -45,13 +45,21 @@
       <label>Event name:</label>
       <input type="text" class="form-control" [(ngModel)]="eventName" name="eventName">
     </div>
-    <div class="form-group">
-      <label>Start Time and Day:</label>
-      <input type="date" [(ngModel)]="defaultStartDate" name="start" class="form-control">
-      <input type="time" [(ngModel)]="startTime" name="usr_time" class="form-control">
-      <label>End Time and Day:</label>
-      <input type="date" [(ngModel)]="defaultEndDate" name="end" class="form-control">
-      <input type="time" [(ngModel)]="endTime" name="usr_time" class="form-control">
+    <div>
+      <div class="form-group">
+        <label>Start Time and Day:</label>
+        <input type="date" [(ngModel)]="defaultStartDate" name="start" class="form-control">
+        <input type="time" [(ngModel)]="startTime" name="usr_time" class="form-control">
+      </div>
+      <div class="form-group">
+        <label>End Time and Day:</label>
+        <input type="date" [(ngModel)]="defaultEndDate" name="end" class="form-control">
+        <input type="time" [(ngModel)]="endTime" name="usr_time" class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Location</label>
+        <input type="text" [(ngModel)]="location" name="location" class="form-control">
+      </div>
       <div *ngIf="addEventError" style="color: red">{{addEventError}}</div>
       <button type="button" class="btn btn-outline-primary float-right" [disabled]="!this.defaultStartDate || !this.startTime || !this.endTime || !this.defaultEndDate || !this.eventName" (click)="addEvent()">{{ editFlag ? 'Update' : 'Add Event' }} </button>
     </div>
@@ -75,7 +83,7 @@
 </form>
 <ng-template #calendarModal let-c="close" let-d="dismiss">
     <div class="modal-header">
-      <h4 class="modal-title">Modal title</h4>
+      <h4 class="modal-title">Share Calendar</h4>
       <button type="button" class="close" aria-label="Close" (click)="d('Cross click')">
         <span aria-hidden="true">&times;</span>
       </button>
@@ -87,9 +95,19 @@
           <option *ngFor="let calendar of (eventObservable | async)" [ngValue]="calendar._id">{{calendar.name}}</option>
         </select>
       </div>
-      <input name="newMember" [formControl]="newMember" class="form-control" [ngbTypeahead]="search" [inputFormatter]="formatter" [resultTemplate]="rt" (selectItem)="select($event)">
+      <div class="form-group">
+        <label>Search By member</label>
+        <input name="newMember" [formControl]="newMember" class="form-control" [ngbTypeahead]="search" [inputFormatter]="formatter" [resultTemplate]="rt" (selectItem)="select($event)">
+      </div>
+      <div class="form-group">
+        <label>Search By Group</label>
+        <input name="group" [formControl]="group" class="form-control" [ngbTypeahead]="searchGroup" [inputFormatter]="formatter" [resultTemplate]="gp" (selectItem)="selectGroup($event)">
+      </div>
       <ng-template #rt let-r="result" let-t="term">
         {{r?.email}}
+      </ng-template>
+      <ng-template #gp let-r="result" let-t="term">
+        {{r?.name}}
       </ng-template>
       <ul class="list-group">
         <li *ngFor="let member of members" class="list-group-item">{{member.email}}</li>

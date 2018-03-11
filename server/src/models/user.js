@@ -11,13 +11,14 @@ var UserSchema = new mongoose.Schema({
   },
   isOAuth: Boolean,
   calendars: [{
-    calendarId: mongoose.Schema.Types.ObjectId,
     edit: Boolean
   }],
   groups: [mongoose.Schema.Types.ObjectId],
   groupinvites: [mongoose.Schema.Types.ObjectId],
   friends: [mongoose.Schema.Types.ObjectId],
   friendRequests: [mongoose.Schema.Types.ObjectId]
+},{
+  usePushEach: true
 });
 UserSchema.index({email: 'text'});
 

@@ -11,7 +11,7 @@ import {
 } from 'date-fns';
 import { CalendarEvent, CalendarEventTitleFormatter } from 'angular-calendar';
 import { CustomEventTitleFormatter } from './custom-event-title-formatter.provider';
-import { NgbModal, ModalDismissReasons, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, ModalDismissReasons, NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { Subject } from 'rxjs/Subject';
 import { HttpClient, HttpParams } from '@angular/common/http';
 
@@ -24,6 +24,7 @@ import { uCalendarEvent } from '../models/u-calendar-event.interface';
 import { FormControl } from '@angular/forms';
 import { timer } from 'rxjs/observable/timer';
 import { of } from 'rxjs/observable/of';
+import { GroupService } from '../group/group.service';
 
 @Component({
   selector: 'app-calendar',
@@ -38,11 +39,14 @@ import { of } from 'rxjs/observable/of';
 })
 
 export class CalendarComponent implements OnInit {
+  currentModal: NgbModalRef;
+  searchGroup: (text$: Observable<string>) => Observable<any[]>;
   eventObservable: Observable<Object[]>;
   search: (text$: Observable<string>) => Observable<Object>;
   @ViewChild('content') public contentModal;
   members = [];
   newMember = new FormControl();
+  group = new FormControl();
   activeDayIsOpen: boolean = false;
   calendarToShare: string;
   eventName: string;
@@ -51,6 +55,7 @@ export class CalendarComponent implements OnInit {
   defaultStartDate: string;
   currentEventID: string;
   defaultEndDate: string;
+  location: string;
   addEventError: string;
   startTime: string;
   endTime: string;
@@ -60,11 +65,12 @@ export class CalendarComponent implements OnInit {
   currentCalendar: string;
 
   refresh: Subject<any> = new Subject();
-  constructor(private modalService: NgbModal, private calendarService: CalendarService) { }
+  constructor(private modalService: NgbModal, private calendarService: CalendarService, private groupService: GroupService) { }
   closeResult: string;
 
   open(content) {
-    this.modalService.open(content).result.then((result) => {
+    this.currentModal = this.modalService.open(content);
+    this.currentModal.result.then((result) => {
       this.editFlag = false;
     }, (reason) => {
       this.editFlag = false;
@@ -79,6 +85,7 @@ export class CalendarComponent implements OnInit {
         this.currentEventID = String(event.id);
         this.setUpDates(event.start, event.end);
         this.setUpTimes(event.start, event.end);
+        this.location = event.location.name;
         this.eventName = event.title;
         this.open(this.contentModal);
       }
@@ -161,11 +168,17 @@ export class CalendarComponent implements OnInit {
         allDay: false,
         startTime: {hour: eventStartDate.getHours(), minute: eventStartDate.getMinutes(), year: eventStartDate.getFullYear(), month: eventStartDate.getMonth(), day: eventStartDate.getDate()},
         endTime: { hour: eventEndDate.getHours(), minute: eventEndDate.getMinutes(), year: eventEndDate.getFullYear(), month: eventEndDate.getMonth(), day: eventEndDate.getDate() },
-        location: {name: 'Lawson', activated: true},
+        location: {activated: false, name: undefined},
         rsvp: { activated: false },
         description: "",
         calendar: this.editFlag ? this.currentCalendar : defaultCalendar
       };
+      if(this.location) {
+        submitEvent.location = {
+          name: this.location,
+          activated: true
+        }
+      }
       if(this.editFlag)
         submitEvent['id'] = this.currentEventID;
       let observable = this.editFlag ? this.calendarService.updateEvent(submitEvent) : this.calendarService.createEvent(submitEvent);
@@ -177,6 +190,12 @@ export class CalendarComponent implements OnInit {
           this.getData();
         }
         this.editFlag = false;
+        this.defaultStartDate = undefined;
+        this.defaultEndDate = undefined;
+        this.eventName = undefined;
+        this.startTime = undefined;
+        this.endTime = undefined;
+        this.currentModal.close();
       }, error => this.addEventError = error);
     });
   }
@@ -187,14 +206,32 @@ export class CalendarComponent implements OnInit {
     this.members.push(obj.item);
     this.newMember.setValue('');
   }
+  selectGroup(obj) {
+    let members = obj.item.members;
+    this.groupService.getGroup(obj.item._id).subscribe(data => {
+      members.forEach((member, index) => {
+        this.members.push({
+          _id: member,
+          email: data.members[index]
+        });
+      });
+    });
+    this.group.setValue('');
+  }
   ngOnInit() {
     this.calendarIdObservable = this.calendarService.getCalendarIDs();
-    this.search = ((text$: Observable<string>) => 
+    this.search = ((text$: Observable<string>) =>
       text$
         .pipe(debounce(() => timer(200)), distinctUntilChanged(), switchMap(() => 
           !!this.newMember.value ? this.calendarService.searchUser(this.newMember.value) : of([])
         ))
-    )
+    );
+    this.searchGroup = ((text$: Observable<string>) =>
+      text$
+        .pipe(debounce(() => timer(200)), distinctUntilChanged(), switchMap(() => 
+          !!this.group.value ? this.calendarService.searchGroup(this.group.value) : of([])
+        ))
+    );
     this.eventObservable = this.calendarService.getEvents();
     this.getData();    
   }
@@ -203,7 +240,6 @@ export class CalendarComponent implements OnInit {
       .subscribe(data => {
         this.events = [];
         data.forEach((calendar) => {
-          console.log(calendar);
           let events: any[] = calendar['events'];
           let modifiedEvents: uCalendarEvent[] = events.map(event => {
             return {
@@ -212,6 +248,7 @@ export class CalendarComponent implements OnInit {
               title: event.name,
               actions: this.actions,
               color: { primary: "blue", secondary: "lightblue" },
+              location: event.location,
               calendarID: event.calendar,
               end: new Date(event.endTime.year, event.endTime.month, event.endTime.day, event.endTime.hour, event.endTime.minute)
             }

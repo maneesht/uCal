@@ -16,7 +16,9 @@
         </tbody>
       </table>
       <a class="btn btn-primary float-right" [routerLink]="['detail','new']">+</a>
-      <app-group-invites></app-group-invites>
+      <div style="clear: both">
+        <app-group-invites></app-group-invites>
+      </div>
     </div>
     <div [class.col]="isDetail()">
       <router-outlet></router-outlet>

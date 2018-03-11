@@ -12,6 +12,7 @@ var GroupSchema = new mongoose.Schema({
   calendars: [mongoose.Schema.Types.ObjectId]
 });
 
+GroupSchema.index({name: 'text'});
 //TODO add functions
 
 

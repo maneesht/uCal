@@ -4,6 +4,8 @@ require('./src/config/config');
 //include objects
 const { mongoose, mongoUrl } = require('./src/database/mongoose');
 
+let sslRedirect = require('heroku-ssl-redirect');
+
 //set up server
 let passport = require('passport');
 const port = process.env.PORT || 3000;
@@ -25,6 +27,7 @@ const app = express();
 app.use(cors());
 app.use(cookieParser());
 app.use(cors());
+app.use(sslRedirect());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(session({ resave: true, saveUninitialized: true, secret: 'asdflasdfasdf' })); //change to environment letiable for dev/prod
