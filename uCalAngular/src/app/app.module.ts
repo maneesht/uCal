@@ -59,7 +59,7 @@ import { GroupInvitesComponent } from './group-invites/group-invites.component';
       config: {
         tokenGetter: tokenGetter,
         headerName: 'x-access-token',
-        whitelistedDomains: ['localhost:3000', 'localhost:4200']
+        whitelistedDomains: ['localhost:3000', 'localhost:4200', 'https://ucal-purdue.herokuapp.com']
       }
     }),
     AppRoutingModule
