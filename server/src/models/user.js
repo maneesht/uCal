@@ -11,7 +11,7 @@ var UserSchema = new mongoose.Schema({
   },
   isOAuth: Boolean,
   calendars: [{
-    calendarId: mongoose.Schema.Types.ObjectId,
+    _id: mongoose.Schema.Types.ObjectId,
     edit: Boolean
   }],
   groups: [mongoose.Schema.Types.ObjectId],

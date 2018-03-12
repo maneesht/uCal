@@ -252,7 +252,7 @@ userRouter.get('/users',verifyToken, (req, res) => {
             }));
         }
         for (var x = 0; x < user.calendars.length; x++) {
-            promises.push(Calendar.findById(user.calendars[x]).then((calendar) => {
+            promises.push(Calendar.findById(user.calendars[x]._id).then((calendar) => {
                 data.calendars.push({
                     name: calendar.name,
                     description: calendar.description,
