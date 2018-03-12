@@ -34,8 +34,11 @@ export class GroupDetailComponent implements OnInit {
         ))
     )
 
+    this.router.events.subscribe((route) => {
+    });
     this.activatedRoute.params.subscribe(params => {
       if(params.id !== "new") { 
+        this.newGroup = false;
         this.groupService.getGroup(params.id).subscribe((group)=>{
           this.group = group;
         })
@@ -57,7 +60,11 @@ export class GroupDetailComponent implements OnInit {
   }
   select(obj) {
     //TODO: Invite member
-    this.toInvite.push(obj.item);
+    console.log(obj.item);
+    let filtered = this.toInvite.filter(item => item.email === obj.item.email);
+    console.log(filtered);
+    if(filtered.length === 0)
+      this.toInvite.push(obj.item);
     this.newMember.setValue('');
   }
   inviteAll() {

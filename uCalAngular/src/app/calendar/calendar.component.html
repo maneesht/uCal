@@ -60,6 +60,10 @@
         <label>Location</label>
         <input type="text" [(ngModel)]="location" name="location" class="form-control">
       </div>
+      <div class="form-group">
+        <label>Description</label>
+        <input type="text" [(ngModel)]="description" name="description" class="form-control">
+      </div>
       <div *ngIf="addEventError" style="color: red">{{addEventError}}</div>
       <button type="button" class="btn btn-outline-primary float-right" [disabled]="!this.defaultStartDate || !this.startTime || !this.endTime || !this.defaultEndDate || !this.eventName" (click)="addEvent()">{{ editFlag ? 'Update' : 'Add Event' }} </button>
     </div>

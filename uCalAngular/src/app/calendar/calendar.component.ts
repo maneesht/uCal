@@ -40,6 +40,7 @@ import { GroupService } from '../group/group.service';
 
 export class CalendarComponent implements OnInit {
   currentModal: NgbModalRef;
+  description: string;
   searchGroup: (text$: Observable<string>) => Observable<any[]>;
   eventObservable: Observable<Object[]>;
   search: (text$: Observable<string>) => Observable<Object>;
@@ -68,12 +69,21 @@ export class CalendarComponent implements OnInit {
   constructor(private modalService: NgbModal, private calendarService: CalendarService, private groupService: GroupService) { }
   closeResult: string;
 
+  clear() {
+    this.editFlag = false;
+    this.defaultStartDate = undefined;
+    this.defaultEndDate = undefined;
+    this.eventName = undefined;
+    this.startTime = undefined;
+    this.endTime = undefined;
+    this.location = undefined;
+  }
   open(content) {
     this.currentModal = this.modalService.open(content);
     this.currentModal.result.then((result) => {
-      this.editFlag = false;
+      this.clear();
     }, (reason) => {
-      this.editFlag = false;
+      this.clear();
     });
   }
   actions: CalendarEventAction[] = [
@@ -85,8 +95,8 @@ export class CalendarComponent implements OnInit {
         this.currentEventID = String(event.id);
         this.setUpDates(event.start, event.end);
         this.setUpTimes(event.start, event.end);
-        console.log(event);
         this.location = event.location.name;
+        this.description = event.description;
         this.eventName = event.title;
         this.open(this.contentModal);
       }
@@ -171,7 +181,7 @@ export class CalendarComponent implements OnInit {
         endTime: { hour: eventEndDate.getHours(), minute: eventEndDate.getMinutes(), year: eventEndDate.getFullYear(), month: eventEndDate.getMonth(), day: eventEndDate.getDate() },
         location: {activated: false, name: undefined},
         rsvp: { activated: false },
-        description: "",
+        description: this.description,
         calendar: this.editFlag ? this.currentCalendar : defaultCalendar
       };
       if(this.location) {
@@ -184,18 +194,15 @@ export class CalendarComponent implements OnInit {
         submitEvent['id'] = this.currentEventID;
       let observable = this.editFlag ? this.calendarService.updateEvent(submitEvent) : this.calendarService.createEvent(submitEvent);
       observable.subscribe(data => {
+        console.log(data);
         if(!this.editFlag) {
-          this.events.push({ id: data['_id'], start: eventStartDate, end: eventEndDate, title: this.eventName, color: { primary: "blue", secondary: "lightblue" }, actions: this.actions });
+          let event: uCalendarEvent = { description: data['description'], calendarID: data['calendar'],id: data['_id'], location: {name: this.location, activated: !!this.location}, start: eventStartDate, end: eventEndDate, title: this.eventName, color: { primary: "blue", secondary: "lightblue" }, actions: this.actions };
+          this.events.push(event);
           this.refresh.next();
         } else {
           this.getData();
         }
-        this.editFlag = false;
-        this.defaultStartDate = undefined;
-        this.defaultEndDate = undefined;
-        this.eventName = undefined;
-        this.startTime = undefined;
-        this.endTime = undefined;
+        this.clear();
         this.currentModal.close();
       }, error => this.addEventError = error);
     });
@@ -204,17 +211,25 @@ export class CalendarComponent implements OnInit {
     return x.email;
   }
   select(obj) {
-    this.members.push(obj.item);
+    let filtered = this.members.filter(member => member.email === obj.item.email);
+    if(filtered.length === 0) {
+      this.members.push(obj.item);
+    }
     this.newMember.setValue('');
   }
   selectGroup(obj) {
     let members = obj.item.members;
     this.groupService.getGroup(obj.item._id).subscribe(data => {
+      console.log(this.members);
       members.forEach((member, index) => {
-        this.members.push({
-          _id: member,
-          email: data.members[index]
-        });
+        let obj = {
+            _id: member,
+            email: data.members[index]
+          };
+          let filtered = this.members.filter(member => member.email === obj.email);
+        if (filtered.length === 0) {
+          this.members.push(obj);
+        }
       });
     });
     this.group.setValue('');
@@ -247,6 +262,7 @@ export class CalendarComponent implements OnInit {
               start: new Date(event.startTime.year, event.startTime.month, event.startTime.day, event.startTime.hour, event.startTime.minute),
               id: event._id,
               title: event.name,
+              description: event.description,
               actions: this.actions,
               color: { primary: "blue", secondary: "lightblue" },
               location: event.location,

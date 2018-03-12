@@ -5,5 +5,6 @@ export interface uCalendarEvent extends CalendarEvent {
     location: {
         activated: boolean;
         name?: string;
-    }
+    };
+    description: string;
 }

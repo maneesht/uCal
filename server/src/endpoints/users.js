@@ -14,6 +14,7 @@ var q = require('q');
 
 let userRouter = express.Router();
 userRouter.post('/signup', (req, res, next) => {
+    console.log('data')
     passport.authenticate('local-signup', function (err, user, info) {
         if (err) { return res.status(401).send(err); }
         if (!user) { return res.status(401).send(info); }
@@ -83,6 +84,7 @@ passport.use('local-signup', new LocalStrategy({
                             done("User created but default calendar creation failed.");
                         });
                     }).catch((err) => {
+                        console.log(err);
                         done("Account already exists for: " + email);
                     });
             });

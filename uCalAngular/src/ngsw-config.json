@@ -19,15 +19,6 @@
         "maxAge": "0u",
         "strategy": "freshness"
       }
-    },
-    {
-      "name": "group",
-      "urls": ["/groups", "/group"],
-      "cacheConfig": {
-        "maxSize": 0,
-        "maxAge": "0u",
-        "strategy": "freshness"
-      }
     }
   ],
   "assetGroups": [{
