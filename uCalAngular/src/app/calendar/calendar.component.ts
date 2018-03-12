@@ -85,6 +85,7 @@ export class CalendarComponent implements OnInit {
         this.currentEventID = String(event.id);
         this.setUpDates(event.start, event.end);
         this.setUpTimes(event.start, event.end);
+        console.log(event);
         this.location = event.location.name;
         this.eventName = event.title;
         this.open(this.contentModal);
