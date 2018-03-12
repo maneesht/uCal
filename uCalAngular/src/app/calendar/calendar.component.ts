@@ -281,7 +281,7 @@ export class CalendarComponent implements OnInit {
     this.view = view;
   }
   shareCalendar() {
-    this.calendarService.shareCalendar(this.calendarToShare, this.members).subscribe();
+    this.calendarService.shareCalendar(this.calendarToShare, this.members).subscribe(() => this.currentModal.close());
   }
   
 }

@@ -26,7 +26,11 @@ const users = [{
     ],
     groupinvites: [
         groupTwoId
-    ]
+    ],
+    calendars: [{
+        _id: calendarTwoId,
+        edit: true
+    }]
 }, {
     _id: userTwoId,
     email: 'steve@example.edu',
@@ -35,7 +39,7 @@ const users = [{
         groupTwoId
     ],
     calendars: [{
-        calendarId: calendarTwoId,
+        _id: calendarTwoId,
         edit: true
     }]
 }];
@@ -46,7 +50,7 @@ const calendars = [{
     description: "The description!",
     owner: userOneId,
     users: users[0],
-    events: [eventOneId, eventTwoId]
+    events: [eventOneId, eventTwoId, eventThreeId]
 }, {
     _id: calendarTwoId,
     name: "Test Calendar 2",

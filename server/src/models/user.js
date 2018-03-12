@@ -7,10 +7,12 @@ var UserSchema = new mongoose.Schema({
   email: {
 	type: String,
     required: true,
+    text: true,
     unique: true
   },
   isOAuth: Boolean,
   calendars: [{
+    _id: mongoose.Schema.Types.ObjectId,
     edit: Boolean
   }],
   groups: [mongoose.Schema.Types.ObjectId],
@@ -20,7 +22,6 @@ var UserSchema = new mongoose.Schema({
 },{
   usePushEach: true
 });
-UserSchema.index({email: 'text'});
 
 //finds and returns a user object with the passed username and password
 UserSchema.statics.findByCredentials = function (email, password) {
