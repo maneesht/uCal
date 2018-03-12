@@ -75,6 +75,7 @@ export class CalendarComponent implements OnInit {
     this.defaultEndDate = undefined;
     this.eventName = undefined;
     this.startTime = undefined;
+    this.location = undefined;
     this.endTime = undefined;
     this.location = undefined;
   }
