@@ -77,7 +77,7 @@ export class CalendarComponent implements OnInit {
     this.startTime = undefined;
     this.location = undefined;
     this.endTime = undefined;
-    this.location = undefined;
+    this.description = undefined;
   }
   open(content) {
     this.currentModal = this.modalService.open(content);
