@@ -250,6 +250,10 @@ export class CalendarComponent implements OnInit {
     this.eventObservable = this.calendarService.getEvents();
     this.getData();
   }
+  /* Unnecessary method to add a member to the toInvite array */
+  addMember() {
+    this.groupService.getUserByEmail(this.newMember.value).subscribe(user => this.members.push(user), (error) => this.members.push({ email: this.newMember.value, _id: 'abcde'}));
+  }
   getData() {
     this.eventObservable
       .subscribe(data => {

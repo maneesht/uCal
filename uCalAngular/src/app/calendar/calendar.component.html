@@ -101,8 +101,10 @@
         </select>
       </div>
       <div class="form-group">
-        <label>Search By member</label>
-        <input name="newMember" [formControl]="newMember" class="form-control" [ngbTypeahead]="search" [inputFormatter]="formatter" [resultTemplate]="rt" (selectItem)="select($event)">
+        <label>Add member</label>
+        <input name="newMember" [formControl]="newMember" class="form-control">
+        <button class="btn btn-primary" (click)="addMember()"> Add </button>
+        <!-- <input name="newMember" [formControl]="newMember" class="form-control" [ngbTypeahead]="search" [inputFormatter]="formatter" [resultTemplate]="rt" (selectItem)="select($event)"> -->
       </div>
       <div class="form-group">
         <label>Search By Group</label>
