@@ -27,7 +27,7 @@ const app = express();
 app.use(cors());
 app.use(cookieParser());
 app.use(cors());
-app.use(sslRedirect());
+//app.use(sslRedirect());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(session({ resave: true, saveUninitialized: true, secret: 'asdflasdfasdf' })); //change to environment letiable for dev/prod
