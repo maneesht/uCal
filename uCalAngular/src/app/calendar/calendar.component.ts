@@ -7,8 +7,10 @@ import {
   endOfMonth,
   isSameDay,
   isSameMonth,
-  addHours
+  addHours,
+  addWeeks
 } from 'date-fns';
+import 'date-fns/add_weeks';
 import { CalendarEvent, CalendarEventTitleFormatter } from 'angular-calendar';
 import { CustomEventTitleFormatter } from './custom-event-title-formatter.provider';
 import { NgbModal, ModalDismissReasons, NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -253,6 +255,16 @@ export class CalendarComponent implements OnInit {
   /* Unnecessary method to add a member to the toInvite array */
   addMember() {
     this.groupService.getUserByEmail(this.newMember.value).subscribe(user => this.members.push(user), (error) => this.members.push({ email: this.newMember.value, _id: 'abcde'}));
+  }
+  previous() {
+    if(this.view === "week") {
+      this.viewDate = addWeeks(this.viewDate, 2);
+    }
+  }
+  next() {
+    if(this.view === "day") {
+      this.viewDate = addDays(this.viewDate, 1);
+    }
   }
   getData() {
     this.eventObservable

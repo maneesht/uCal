@@ -1,12 +1,12 @@
 <div class="row">
   <div class="col-3">
-    <button class="btn btn-primary" mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate">Previous</button>
+    <button class="btn btn-primary" mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate" (click)="previous()">Previous</button>
   </div>
   <div class="col-6">
     <h2 class="text-center">{{ viewDate | calendarDate:(view+ 'ViewTitle'):'en' }}</h2>
   </div>
   <div class="col-3">
-    <button class="btn btn-primary float-right" mwlCalendarNextView [view]="view" [(viewDate)]="viewDate">Next</button>
+    <button class="btn btn-primary float-right" mwlCalendarNextView [view]="view" [(viewDate)]="viewDate" (click)="next()">Next</button>
   </div>
 </div>
 <div class="text-center">
