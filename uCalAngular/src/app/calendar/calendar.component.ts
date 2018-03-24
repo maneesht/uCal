@@ -170,9 +170,13 @@ export class CalendarComponent implements OnInit {
     let eventStartDate = new Date(this.start);
     let eventEndDate = new Date(this.end);
     eventStartDate.setHours(+startHours[0], +startHours[1]);
-    eventStartDate.setDate(eventStartDate.getDate() + 1);
+    //The following line sets the start date incorrectly by one month ahead
+    eventStartDate.setDate(eventStartDate.getDate() + 2);
+    //The following line sets the end date incorrectly by two months ahead
+    eventEndDate.setDate(eventEndDate.getDate() + 3);
+    //eventStartDate.setDate(eventStartDate.getDate() + 1);
     eventEndDate.setHours(+endHours[0], +endHours[1]);
-    eventEndDate.setDate(eventEndDate.getDate() + 1);
+    //eventEndDate.setDate(eventEndDate.getDate() + 1);
     let test = new Date(this.start);
     this.addEventError = '';
    // if(eventEndDate.getTime() < eventStartDate.getTime()) { //End date could be before start date
