@@ -105,7 +105,7 @@ passport.use('local-signup', new LocalStrategy({
 
 //route for finding a user by it's email
 //TODO: change to GET
-userRouter.post('/users/find', verifyToken, (req, res) => {
+userRouter.get('/users/find', (req, res) => {
     let email = req.decoded.user.email;
 
     User.findByEmail(email)
@@ -408,6 +408,25 @@ userRouter.delete('/users', verifyToken, (req, res) => {
     }).catch(() => {
         return res.status(404).send(`User with ID ${req.params.userID} not found`);
     });
+});
+userRouter.get('/user/get-email/:userId', (req, res) => {
+    User.findById(req.params.userId).then((user) => {
+    res.send({ _id: user._id, email: user.email });
+    }).catch(err => res.status(400).send(err));
+});
+userRouter.get('/users/search/:userID', verifyToken, (req, res) => {
+    var userID = req.params.userID;
+    User
+        .find({ $text: { $search: userID } })
+        .limit(5)
+        .exec((err, results) => {
+            if (results) {
+                let updatedResults = results.map(user => ({ _id: user._id, email: user.email }));
+                res.send(updatedResults);
+            } else {
+                res.send([]);
+            }
+        });
 });
 userRouter.post('/users/find', (req, res) => {
     var body = _.pick(req.body, ['email']);

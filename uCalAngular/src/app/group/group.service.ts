@@ -14,7 +14,7 @@ interface User {
 export class GroupService {
 
   groupsObservable: Observable <string[]>;
-  
+
   changedSubject = new Subject<string>();
   changed$ = this.changedSubject.asObservable();
   emitChange() {
@@ -51,7 +51,7 @@ export class GroupService {
     return this.respondToInvite(_id, true);
   }
   declineInvite(_id: string) {
-    return this.respondToInvite(_id, false);
+    return this.respondToInvite(_id, true);
   }
   inviteMember(groupId: string, memberId: string) {
     return this.http.post(`/groups/${groupId}/invite`, { users: [memberId] });
@@ -64,7 +64,7 @@ export class GroupService {
   saveGroup(group: Group) {
     return this.http.post('/groups/', {group});
   }
-  
+
   updateGroup(group: Group){
     return this.http.post('/user/groups/edit', {group});
   }
@@ -73,8 +73,8 @@ export class GroupService {
     return this.http.get<User>(`/user/get-email/${_id}`).pipe(map(user => user.email));
   }
 
-  constructor(private http: HttpClient) { 
-    this.groupsObservable = this.http.get<string[]>(`/groups/`); 
+  constructor(private http: HttpClient) {
+    this.groupsObservable = this.http.get<string[]>(`/groups/`);
   }
 
 }
