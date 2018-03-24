@@ -80,7 +80,8 @@ export class GroupDetailComponent implements OnInit {
 
   save() {
     this.groupService.saveGroup(this.group).subscribe(() => {
-      this.groupService.emitChange();
+      //Removed line to create defect where master detail wouldn't update
+      //this.groupService.emitChange();
       this.router.navigate(['/group']);
     });
   }
