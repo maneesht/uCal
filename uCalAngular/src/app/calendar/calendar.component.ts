@@ -175,14 +175,13 @@ export class CalendarComponent implements OnInit {
     //}
     this.calendarService.getCalendarIDs().subscribe(calendars => {
       let defaultCalendar = calendars[0]._id;
-      let submitEvent = {name: this.eventName, 
-        date: {day: eventStartDate.getDate(), month: eventStartDate.getMonth(), year: eventStartDate.getFullYear() }, 
+      let submitEvent = {name: this.eventName,
+        date: {day: eventStartDate.getDate(), month: eventStartDate.getMonth(), year: eventStartDate.getFullYear() },
         allDay: false,
         startTime: {hour: eventStartDate.getHours(), minute: eventStartDate.getMinutes(), year: eventStartDate.getFullYear(), month: eventStartDate.getMonth(), day: eventStartDate.getDate()},
         endTime: { hour: eventEndDate.getHours(), minute: eventEndDate.getMinutes(), year: eventEndDate.getFullYear(), month: eventEndDate.getMonth(), day: eventEndDate.getDate() },
         location: {activated: false, name: undefined},
         rsvp: { activated: false },
-        description: this.description,
         calendar: this.editFlag ? this.currentCalendar : defaultCalendar
       };
       if(this.location) {
@@ -239,18 +238,18 @@ export class CalendarComponent implements OnInit {
     this.calendarIdObservable = this.calendarService.getCalendarIDs();
     this.search = ((text$: Observable<string>) =>
       text$
-        .pipe(debounce(() => timer(200)), distinctUntilChanged(), switchMap(() => 
+        .pipe(debounce(() => timer(200)), distinctUntilChanged(), switchMap(() =>
           !!this.newMember.value ? this.calendarService.searchUser(this.newMember.value) : of([])
         ))
     );
     this.searchGroup = ((text$: Observable<string>) =>
       text$
-        .pipe(debounce(() => timer(200)), distinctUntilChanged(), switchMap(() => 
+        .pipe(debounce(() => timer(200)), distinctUntilChanged(), switchMap(() =>
           !!this.group.value ? this.calendarService.searchGroup(this.group.value) : of([])
         ))
     );
     this.eventObservable = this.calendarService.getEvents();
-    this.getData();    
+    this.getData();
   }
   getData() {
     this.eventObservable
@@ -301,5 +300,5 @@ export class CalendarComponent implements OnInit {
   shareCalendar() {
     this.calendarService.shareCalendar(this.calendarToShare, this.members).subscribe(() => this.currentModal.close());
   }
-  
+
 }
