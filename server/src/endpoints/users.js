@@ -14,7 +14,6 @@ var q = require('q');
 
 let userRouter = express.Router();
 userRouter.post('/signup', (req, res, next) => {
-    console.log('data')
     passport.authenticate('local-signup', function (err, user, info) {
         if (err) { return res.status(401).send(err); }
         if (!user) { return res.status(401).send(info); }
@@ -56,8 +55,8 @@ passport.use('local-signup', new LocalStrategy({
                     return done(err);
                 //Regular Expression for finding email addresses
                 var re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
-                if (!re.test(email))
-                    return done("email not a correct email format");
+                // if (!re.test(email))
+                    // return done("email not a correct email format");
                 if(user) {
                     return done(null, false, req.flash('signupMessage', 'Email already taken'));
                 }
@@ -84,7 +83,6 @@ passport.use('local-signup', new LocalStrategy({
                             done("User created but default calendar creation failed.");
                         });
                     }).catch((err) => {
-                        console.log(err);
                         done("Account already exists for: " + email);
                     });
             });
@@ -224,13 +222,6 @@ userRouter.patch('/users/', verifyToken, (req, res) => {
         return res.status(400).send("Failed to Update Password");
     });
 });
-
-userRouter.get('/user/get-email/:userId', (req, res) => {
-    User.findById(req.params.userId).then((user) => {
-        res.send({ _id: user._id, email: user.email });
-    }).catch(err => res.status(400).send(err));
-});
-
 //ADDED TOKEN
 userRouter.get('/users',verifyToken, (req, res) => {
     //Get the users calendars, events, groups, and friends
@@ -242,7 +233,7 @@ userRouter.get('/users',verifyToken, (req, res) => {
         friends: []
     }
     //console.log(req.decoded.user._id);
-    
+
     User.findById(req.decoded.user._id).then((user) => {
         var promises = [];
         data.email = user.email;
@@ -254,7 +245,7 @@ userRouter.get('/users',verifyToken, (req, res) => {
             }));
         }
         for (var x = 0; x < user.calendars.length; x++) {
-            promises.push(Calendar.findById(user.calendars[x]._id).then((calendar) => {
+            promises.push(Calendar.findById(user.calendars[x]).then((calendar) => {
                 data.calendars.push({
                     name: calendar.name,
                     description: calendar.description,
@@ -288,7 +279,7 @@ userRouter.get('/users',verifyToken, (req, res) => {
     }).catch((err) => {
         return res.status(404).send(`User with ID ${req.params.userID} not Found`);
     });
-    
+
    return res.status(404);
 });
 
@@ -417,20 +408,6 @@ userRouter.delete('/users', verifyToken, (req, res) => {
     }).catch(() => {
         return res.status(404).send(`User with ID ${req.params.userID} not found`);
     });
-});
-userRouter.get('/users/search/:userID', verifyToken, (req, res) => {
-    var userID = req.params.userID;
-    User
-        .find({ $text: { $search: userID}})
-        .limit(5)
-        .exec((err, results) => {
-            if(results) {
-                let updatedResults = results.map(user => ({ _id: user._id, email: user.email }));
-                res.send(updatedResults);
-            } else {
-                res.send([]);
-            }
-        });
 });
 userRouter.post('/users/find', (req, res) => {
     var body = _.pick(req.body, ['email']);
