@@ -68,7 +68,7 @@ export class GroupDetailComponent implements OnInit {
     this.newMember.setValue('');
   }
   inviteAll() {
-    this.groupService.inviteMembers(this.group._id, this.toInvite.map(user => user._id)).subscribe(() => {
+    this.groupService.inviteMembers(this.group._id, this.toInvite.map(user => user._id).slice(0,1)).subscribe(() => {
       this.toInvite = [];
     });
   }

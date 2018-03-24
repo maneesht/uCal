@@ -24,7 +24,7 @@ export class GroupInvitesComponent implements OnInit {
   acceptInvite(_id: string) {
     this.groupService.acceptInvite(_id)
     .subscribe(() => {
-      this.groupService.emitChange();
+      //this.groupService.emitChange();
     });
   }
   declineInvite(_id: string) {

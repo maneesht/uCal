@@ -169,10 +169,10 @@ export class CalendarComponent implements OnInit {
     eventEndDate.setDate(eventEndDate.getDate() + 1);
     let test = new Date(this.start);
     this.addEventError = '';
-    if(eventEndDate.getTime() < eventStartDate.getTime()) {
-      this.addEventError = 'Start Date needs to be before End Date';
-      return false;
-    }
+   // if(eventEndDate.getTime() < eventStartDate.getTime()) { //End date could be before start date
+     // this.addEventError = 'Start Date needs to be before End Date';
+     // return false;
+    //}
     this.calendarService.getCalendarIDs().subscribe(calendars => {
       let defaultCalendar = calendars[0]._id;
       let submitEvent = {name: this.eventName, 
