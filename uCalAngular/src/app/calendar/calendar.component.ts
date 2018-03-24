@@ -84,9 +84,11 @@ export class CalendarComponent implements OnInit {
   open(content) {
     this.currentModal = this.modalService.open(content);
     this.currentModal.result.then((result) => {
-      this.clear();
+      //Commented this line out for modal defect
+      //this.clear();
     }, (reason) => {
-      this.clear();
+      //commented this line out for modal defect
+      //this.clear();
     });
   }
   actions: CalendarEventAction[] = [
@@ -203,7 +205,8 @@ export class CalendarComponent implements OnInit {
         } else {
           this.getData();
         }
-        this.clear();
+        //commented this line out for modal defect
+        //this.clear();
         this.currentModal.close();
       }, error => this.addEventError = error);
     });
