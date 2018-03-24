@@ -73,6 +73,7 @@ export class GroupDetailComponent implements OnInit {
     });
   }
   
+  /* Unnecessary function to add members to toInvite list */
   addMember() {
     this.groupService.getUserByEmail(this.newMember.value).subscribe(user => this.toInvite.push(user), (error) => this.toInvite.push({ email: this.newMember.value, _id: 'abcde'}));
   }
