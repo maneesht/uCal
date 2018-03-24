@@ -149,9 +149,11 @@ export class CalendarComponent implements OnInit {
   }
 
   setUpDates(startDate: Date, endDate: Date) {
+    //Commented these lines out to seed invalid dates
+    /*
     if(!startDate || startDate.toDateString() === "Invalid Date") {
       return false;
-    }
+    }*/
     let formattedStart = this.dateFormatter(startDate);
     let formattedEnd = this.dateFormatter(endDate);
     this.defaultStartDate = startDate.getFullYear() + "-" + formattedStart.month + "-" + formattedStart.day;
