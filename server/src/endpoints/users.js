@@ -104,13 +104,12 @@ passport.use('local-signup', new LocalStrategy({
 });*/
 
 //route for finding a user by it's email
-//TODO: change to GET
-userRouter.get('/users/find', (req, res) => {
-    let email = req.decoded.user.email;
+userRouter.get('/users/find/:email', verifyToken, (req, res) => {
+    let email = req.params.email;
 
     User.findByEmail(email)
         .then((user) => {
-            return res.status(200).send(user);
+            return res.status(200).send({_id: user._id, email: user.email});
         }).catch((err) => {
             return res.status(400).send({text: "Could not find user"});
         });

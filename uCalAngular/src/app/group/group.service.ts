@@ -72,9 +72,11 @@ export class GroupService {
   getUser(_id: string) {
     return this.http.get<User>(`/user/get-email/${_id}`).pipe(map(user => user.email));
   }
-
-  constructor(private http: HttpClient) {
-    this.groupsObservable = this.http.get<string[]>(`/groups/`);
+  getUserByEmail(email: string) {
+    return this.http.get<User>(`/users/find/${email}`);
+  }
+  constructor(private http: HttpClient) { 
+    this.groupsObservable = this.http.get<string[]>(`/groups/`); 
   }
 
 }

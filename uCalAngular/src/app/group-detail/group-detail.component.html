@@ -26,8 +26,8 @@
       </ul>
       <div class="form-group" *ngIf="!newGroup">
         <label> Invite Member</label>
-        <input name="newMember" [formControl]="newMember" class="form-control" [ngbTypeahead]="search" [inputFormatter]="formatter"
-        [resultTemplate]="rt" (selectItem)="select($event)">
+        <input name="newMember" [formControl]="newMember" class="form-control" >
+        <button  class="btn btn-primary" (click)="addMember()">Add Member</button>
       </div>
       <ng-template #rt let-r="result" let-t="term">
         {{r?.email}}
