@@ -178,9 +178,11 @@ eventRouter.post('/events/update', (req, res) => {
             if (body.location !== undefined) {
                 uevent.location = body.location;
             }
+            /*
             if (body.description !== undefined) {
                 uevent.description = body.description;
             }
+            */
             if (body.owner !== undefined) {
                 uevent.owner = body.owner;
             }
