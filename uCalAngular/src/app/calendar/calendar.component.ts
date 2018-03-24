@@ -178,7 +178,6 @@ export class CalendarComponent implements OnInit {
       let submitEvent = {name: this.eventName,
         date: {day: eventStartDate.getDate(), month: eventStartDate.getMonth(), year: eventStartDate.getFullYear() },
         allDay: false,
-        startTime: {hour: eventStartDate.getHours(), minute: eventStartDate.getMinutes(), year: eventStartDate.getFullYear(), month: eventStartDate.getMonth(), day: eventStartDate.getDate()},
         endTime: { hour: eventEndDate.getHours(), minute: eventEndDate.getMinutes(), year: eventEndDate.getFullYear(), month: eventEndDate.getMonth(), day: eventEndDate.getDate() },
         location: {activated: false, name: undefined},
         rsvp: { activated: false },
