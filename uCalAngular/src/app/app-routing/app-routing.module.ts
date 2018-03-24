@@ -9,7 +9,7 @@ import { SettingsComponent } from '../settings/settings.component';
 import { GroupDetailComponent } from '../group-detail/group-detail.component';
 
 const routes: Routes = [
-  { path: "settings", component: SettingsComponent, canActivate: [AuthGuardService] },
+  { path: "settings", component: SettingsComponent },
   { path: "group", component: GroupComponent, canActivate: [AuthGuardService],
   children: [
     { path: 'detail/:id', component: GroupDetailComponent }
