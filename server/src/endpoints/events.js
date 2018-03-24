@@ -140,10 +140,11 @@ eventRouter.post('/events/update', (req, res) => {
             if (uevent === null) {
                 return res.status(404).send("Event not Found");
             }
-
+            /*
             if (body.name !== undefined) {
                 uevent.name = body.name;
             }
+            */
             if (body.date !== undefined) {
                 uevent.date = body.date;
             }
