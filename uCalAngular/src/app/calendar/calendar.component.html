@@ -65,7 +65,8 @@
         <input type="text" [(ngModel)]="description" name="description" class="form-control">
       </div>
       <div *ngIf="addEventError" style="color: red">{{addEventError}}</div>
-      <button type="button" class="btn btn-outline-primary float-right" [disabled]="!this.defaultStartDate || !this.startTime || !this.endTime || !this.defaultEndDate || !this.eventName" (click)="addEvent()">{{ editFlag ? 'Update' : 'Add Event' }} </button>
+      <button type="button" class="btn btn-outline-primary float-right" [disabled]="!this.defaultStartDate || !this.startTime || !this.endTime || !this.defaultEndDate" (click)="addEvent()">{{ editFlag ? 'Update' : 'Add Event' }} </button>
+      <!-- <button type="button" class="btn btn-outline-primary float-right" [disabled]="!this.defaultStartDate || !this.startTime || !this.endTime || !this.defaultEndDate || !this.eventName" (click)="addEvent()">{{ editFlag ? 'Update' : 'Add Event' }} </button> -->
     </div>
   </div>
   
