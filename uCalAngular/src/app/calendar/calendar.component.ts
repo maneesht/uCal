@@ -193,6 +193,9 @@ export class CalendarComponent implements OnInit {
         rsvp: { activated: false },
         calendar: this.editFlag ? this.currentCalendar : defaultCalendar
       };
+      if(!this.editFlag) {
+        submitEvent['startTime'] = { hour: eventStartDate.getHours(), minute: eventStartDate.getMinutes(), year: eventStartDate.getFullYear(), month: eventStartDate.getMonth(), day: eventStartDate.getDate() };
+      }
       if(this.location) {
         submitEvent.location = {
           name: this.location,
