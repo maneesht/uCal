@@ -175,9 +175,10 @@ eventRouter.post('/events/update', (req, res) => {
             if (body.endTime !== undefined) {
                 uevent.endTime = body.endTime;
             }
+            /*
             if (body.location !== undefined) {
                 uevent.location = body.location;
-            }
+            }*/
             /*
             if (body.description !== undefined) {
                 uevent.description = body.description;
