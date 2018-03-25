@@ -156,8 +156,8 @@ export class CalendarComponent implements OnInit {
     }*/
     let formattedStart = this.dateFormatter(startDate);
     let formattedEnd = this.dateFormatter(endDate);
-    this.defaultStartDate = startDate.getFullYear() + "-" + formattedStart.month + "-" + formattedStart.day;
-    this.defaultEndDate = endDate.getFullYear() + "-" + formattedEnd.month + "-" + formattedEnd.day;
+    this.defaultStartDate = (startDate.getFullYear() - 5)+ "-" + formattedStart.month + "-" + formattedStart.day;
+    this.defaultEndDate = (endDate.getFullYear() - 5) + "-" + formattedEnd.month + "-" + formattedEnd.day;
     return true;
   }
 
